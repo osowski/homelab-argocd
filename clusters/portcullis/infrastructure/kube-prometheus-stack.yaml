@@ -1,0 +1,52 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"  # Deploy after cert-manager and storage
+spec:
+  project: infrastructure
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 56.6.2  # Pin to specific version
+    chart: kube-prometheus-stack
+    helm:
+      valueFiles:
+        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/kube-prometheus-stack/base/values.yaml
+        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/kube-prometheus-stack/overlays/portcullis/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true  # Required for CRDs
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    # Ignore differences in webhook CA bundles (auto-generated)
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+    # Ignore differences in auto-generated secrets
+    - group: ""
+      kind: Secret
+      name: alertmanager-kube-prometheus-stack-alertmanager
+      jsonPointers:
+        - /data

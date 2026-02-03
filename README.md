@@ -95,7 +95,8 @@ Navigate to https://localhost:8080 and login with username `admin` and the passw
 ## Documentation
 
 - [Architecture](docs/architecture.md) - Detailed system design and GitOps flow
-- [Adding Applications](docs/adding-applications.md) - How to add new applications
+- [Adding Applications](docs/adding-applications.md) - How to add new applications (Kustomize and Helm overview)
+- [Adding Helm Workloads](docs/adding-helm-workloads.md) - Comprehensive guide for Helm-based deployments
 - [Bootstrap Procedure](docs/bootstrap-procedure.md) - Detailed bootstrap deployment steps
 - [Cluster Onboarding](docs/cluster-onboarding.md) - How to onboard new clusters
 - [Architecture Decision Records](adrs/) - Record of architectural decisions
