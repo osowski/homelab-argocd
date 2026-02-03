@@ -39,6 +39,8 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
+> TODO update this to be a version-specific Argo CD installation
+
 Wait for all ArgoCD pods to be running:
 
 ```bash
@@ -124,6 +126,8 @@ workloads-apps        Synced        Healthy
 
 ## Step 7: Add Applications to Cluster
 
+> TODO This Step should simply be a link to `adding-applications.md` file instead of duplicating content. It should contain a link for Helm applications and for manifest-based applications separately.
+
 Add applications by creating ArgoCD Application manifests in the cluster directories.
 
 ### Example: Add http-echo workload
@@ -204,22 +208,7 @@ git commit -m "Add http-echo to <cluster-name> cluster"
 git push
 ```
 
-## Step 8: Verify Application Deployment
-
-ArgoCD will automatically detect the new Application and sync it:
-
-```bash
-# Watch applications
-kubectl get applications -n argocd -w
-
-# Check pods
-kubectl get pods -n http-echo
-
-# Check ingress
-kubectl get ingress -n http-echo
-```
-
-## Step 9: Configure DNS and Ingress
+## Step 8: Configure DNS and Ingress
 
 ### Get LoadBalancer IP
 

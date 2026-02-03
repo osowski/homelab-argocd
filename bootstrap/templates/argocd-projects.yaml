@@ -7,15 +7,25 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  description: Infrastructure platform components
+  description: Infrastructure platform components (cert-manager, longhorn, monitoring, etc.)
+
+  # Allow sourcing from the main gitops repository
   sourceRepos:
     - {{ .Values.git.repoUrl }}
+    - https://prometheus-community.github.io/helm-charts
+    # TODO add cert-manager repo here
+
+  # Allow deploying to all namespaces
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc
+
+  # Infrastructure project can create cluster-scoped resources
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'
+
+  # Infrastructure project can create all namespace-scoped resources
   namespaceResourceWhitelist:
     - group: '*'
       kind: '*'
@@ -28,12 +38,17 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  description: Application workloads
+  description: Application workloads (user-facing applications and services)
+
+  # Allow sourcing from the main gitops repository
   sourceRepos:
     - {{ .Values.git.repoUrl }}
+
+  # Allow deploying to all namespaces
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc
+
   # Workloads project only allows namespace-scoped resources
   namespaceResourceWhitelist:
     - group: ''
@@ -66,7 +81,5 @@ spec:
       kind: Role
     - group: rbac.authorization.k8s.io
       kind: RoleBinding
-  # Deny cluster-scoped resources
-  clusterResourceBlacklist:
-    - group: '*'
-      kind: '*'
+    - group: resource.argoproj.io
+      kind: Application
