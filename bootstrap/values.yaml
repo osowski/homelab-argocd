@@ -1,0 +1,24 @@
+# Default values for ArgoCD bootstrap
+# These values can be overridden per cluster
+
+# Cluster configuration
+cluster:
+  name: "default"
+  domain: "osow.ski"
+
+# ArgoCD configuration
+argocd:
+  namespace: "argocd"
+
+# Git repository configuration
+git:
+  repoUrl: "https://github.com/osowski/homelab-argocd.git"
+  targetRevision: "HEAD"
+
+# Application sync policies
+syncPolicy:
+  automated:
+    prune: true
+    selfHeal: true
+  syncOptions:
+    - CreateNamespace=true
