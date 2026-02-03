@@ -15,7 +15,7 @@ Before doing work, Claude should follow this **standard workflow**:
 - Investigate the relevant area of the codebase.
 - Ask clarifying questions before writing or modifying code.
 - Construct a short plan with steps before coding anything.
-- **Review the [Code Review Checklist](https://github.com/osowski/homelab-ansible/blob/main/docs/code_review_checklist.md) during planning** to anticipate common issues.
+- **Review the [Code Review Checklist](./docs/code_review_checklist.md) during planning** to anticipate common issues.
 
 ### 2) Code with Verification
 - Implement minimal, necessary changes to solve the task.
@@ -24,7 +24,7 @@ Before doing work, Claude should follow this **standard workflow**:
 - **Apply security and defensive programming practices** from the checklist.
 
 ### 3) Pre-PR Review
-- **MANDATORY: Review [Code Review Checklist](https://github.com/osowski/homelab-ansible/blob/main/docs/code_review_checklist.md) before creating PR**
+- **MANDATORY: Review [Code Review Checklist](./docs/code_review_checklist.md) before creating PR**
 - Verify all documentation in `/docs` has been updated (architecture.md, project_spec.md, changelog.md)
 - Ensure PR description is accurate and includes explicit GitHub issue link
 - Confirm branch naming follows `feature-<id>/` or `fix-<id>/` format
@@ -37,11 +37,11 @@ Before doing work, Claude should follow this **standard workflow**:
 
 Refer to these documentation files for details. Claude may read them as needed:
 
-- [Project Spec](https://github.com/osowski/homelab-ansible/blob/main/docs/project_spec.md) - Full requirements, scope, and technical details
-- [Architecture](https://github.com/osowski/homelab-ansible/blob/main/docs/architecture.md) - System design and data flow
+- [Project Spec](./docs/project_spec.md) - Full requirements, scope, and technical details
+- [Architecture](./docs/architecture.md) - System design and data flow
 - [Changelog](./docs/changelog.md) - Version history
    - TODO needs more detail/attention
-- [Code Review Checklist](https://github.com/osowski/homelab-ansible/blob/main/docs/code_review_checklist.md) - **MANDATORY checklist before creating PRs**
+- [Code Review Checklist](./docs/code_review_checklist.md) - **MANDATORY checklist before creating PRs**
 - [Architecture Decision Records](./adrs/) - Sub-directory containing all architecture decision records
 
 ## Constraints and Policies
@@ -62,7 +62,7 @@ Only load task-specific docs when needed. This file is intentionally concise —
 
 ### Security - MUST FOLLOW
 
-All security rules are detailed in the [Code Review Checklist](https://github.com/osowski/homelab-ansible/blob/main/docs/code_review_checklist.md). Key principles:
+All security rules are detailed in the [Code Review Checklist](./docs/code_review_checklist.md). Key principles:
 
 - NEVER expose API keys or tokens
 - ALWAYS use environment variables for secrets
@@ -73,7 +73,7 @@ All security rules are detailed in the [Code Review Checklist](https://github.co
 
 ### Code Quality
 
-- Apply defensive programming practices (see [Code Review Checklist](https://github.com/osowski/homelab-ansible/blob/main/docs/code_review_checklist.md)
+- Apply defensive programming practices (see [Code Review Checklist](./docs/code_review_checklist.md)
 - Ensure idempotency - playbooks must be safe to re-run
 - Validate inputs and handle edge cases
 - Consider both enabled and disabled states for feature flags
@@ -95,7 +95,7 @@ All security rules are detailed in the [Code Review Checklist](https://github.co
 1. Create a new branch: `git checkout -b feature-<github-issue-id>/<feature-name>`
 2. Develop and commit on the feature branch
 3. **MANDATORY: Update relevant documentation in `/docs`** (see checklist for which files)
-4. **MANDATORY: Review [Code Review Checklist](https://github.com/osowski/homelab-ansible/blob/main/docs/code_review_checklist.md)** before creating PR
+4. **MANDATORY: Review [Code Review Checklist](./docs/code_review_checklist.md)** before creating PR
 5. Push the branch: `git push -u origin feature-<github-issue-id>/<feature-name>`
 6. Create a PR to merge into `main`
 
@@ -110,7 +110,7 @@ All security rules are detailed in the [Code Review Checklist](https://github.co
 - PR description must accurately reflect implementation
 - Include description of WHAT changed and WHY
 - Include explicit markdown link to GitHub Issue
-- **MANDATORY: Review [Code Review Checklist](https://github.com/osowski/homelab-ansible/blob/main/docs/code_review_checklist.md)** before creating PR
+- **MANDATORY: Review [Code Review Checklist](./docs/code_review_checklist.md)** before creating PR
 
 ### GitHub Issues
 
