@@ -235,6 +235,14 @@ kubectl get ingress -n <app-name>
 
 ## Adding a Helm Application
 
+> **For a comprehensive guide to Helm deployments**, see [Adding Helm Workloads](adding-helm-workloads.md) which includes:
+> - Detailed walkthroughs for infrastructure and workload applications
+> - Real-world examples (cert-manager, Grafana)
+> - Advanced patterns and troubleshooting
+> - Testing and validation procedures
+>
+> The quick reference below covers the basic steps.
+
 ### Step 1: Create Base Directory
 
 ```bash
