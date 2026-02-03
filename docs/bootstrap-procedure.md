@@ -2,6 +2,8 @@
 
 This document describes the detailed procedure for bootstrapping ArgoCD on a new or existing Kubernetes cluster.
 
+> TODO The majority of this doc is duplicative of `cluster-onboarding.md`. This should be folded into `cluster-onboarding.md` instead.
+
 ## Prerequisites
 
 ### Cluster Requirements
@@ -56,6 +58,8 @@ Review the output for correctness:
 - ArgoCD Projects created (infrastructure, workloads)
 - Parent Applications created (infrastructure-apps, workloads-apps)
 - Correct cluster name and repository URL
+
+> TODO This needs to be updated in the future to have ArgoCD manage the ArgoProjects long-term.
 
 ### Step 3: Apply Bootstrap
 

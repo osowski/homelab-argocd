@@ -4,7 +4,7 @@
 # Cluster configuration
 cluster:
   name: "default"
-  domain: "osow.ski"
+  domain: "cluster.local"
 
 # ArgoCD configuration
 argocd:
