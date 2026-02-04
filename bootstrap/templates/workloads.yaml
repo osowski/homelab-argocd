@@ -14,8 +14,6 @@ spec:
     repoURL: {{ .Values.git.repoUrl }}
     targetRevision: {{ .Values.git.targetRevision }}
     path: clusters/{{ .Values.cluster.name }}/workloads
-    directory:
-      recurse: true
   destination:
     server: https://kubernetes.default.svc
     namespace: {{ .Values.argocd.namespace }}
