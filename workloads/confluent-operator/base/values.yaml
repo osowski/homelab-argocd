@@ -35,7 +35,7 @@ serviceAccount:
 
 # Image configuration
 image:
-  repository: docker.io/confluentinc/confluent-operator
+  repository: confluentinc/confluent-operator
   pullPolicy: IfNotPresent
   # Tag defaults to chart appVersion
 
