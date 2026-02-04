@@ -50,6 +50,22 @@ spec:
       kind: ValidatingWebhookConfiguration
       jsonPointers:
         - /webhooks/0/clientConfig/caBundle
+    # Ignore secrets preserved from manual installation (not managed by Helm)
+    - group: ""
+      kind: Secret
+      name: argocd-secret
+      jsonPointers:
+        - /data
+    - group: ""
+      kind: Secret
+      name: argocd-redis
+      jsonPointers:
+        - /data
+    - group: ""
+      kind: Secret
+      name: argocd-notifications-secret
+      jsonPointers:
+        - /data
     # Ignore auto-generated TLS secrets
     - group: ""
       kind: Secret

@@ -1,9 +1,22 @@
 # ArgoCD Helm Chart Base Configuration
 # This configuration enables ArgoCD to manage itself (self-management pattern)
+#
+# IMPORTANT: This configuration assumes ArgoCD was initially installed manually via:
+#   kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+#
+# The Helm chart will take over management of existing resources but will NOT recreate secrets.
+# This preserves admin passwords, Redis authentication, and other sensitive data.
 
 global:
   # Domain configuration for ArgoCD UI
   domain: argocd.example.com  # Override in cluster overlay
+
+# ArgoCD Configs - Core Secret Management
+configs:
+  secret:
+    # DO NOT recreate argocd-secret - reuse existing secret from manual installation
+    # This preserves the admin password, server secret key, and other sensitive data
+    createSecret: false
 
 # ArgoCD Server Configuration
 server:
@@ -62,11 +75,9 @@ repoServer:
 
 # ArgoCD Redis Configuration
 redis:
-  ## TODO DEBUGGING
   serviceAccount:
     create: true
     name: argocd-redis
-  ## END TODO DEBUGGING
   # Resource limits for Redis
   resources:
     limits:
@@ -76,12 +87,13 @@ redis:
       cpu: 100m
       memory: 64Mi
 
-## TOOD DEBUGGING
+# Redis Secret Initialization
+# IMPORTANT: Disabled to reuse existing argocd-redis secret from manual installation
+# The manual install creates this secret via a Job, and we don't want to recreate it
 redisSecretInit:
-  enabled: false # This is disabled, since we assume we are taking over a previous manual installation
+  enabled: false
   serviceAccount:
     name: argocd-redis-secret-init
-## END TODO DEBUGGING
 
 # ArgoCD ApplicationSet Controller
 applicationSet:
@@ -97,6 +109,8 @@ applicationSet:
 # ArgoCD Notifications Controller
 notifications:
   enabled: false  # Can be enabled in overlay if needed
+  secret:
+    create: false  # Reuse existing argocd-notifications-secret from manual installation
 
 # ArgoCD Dex (SSO) - disabled by default
 dex:

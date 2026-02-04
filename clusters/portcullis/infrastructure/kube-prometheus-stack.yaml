@@ -25,9 +25,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+    automated: {} # Explicitly NOT auto-sync while under development
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true  # Required for CRDs
