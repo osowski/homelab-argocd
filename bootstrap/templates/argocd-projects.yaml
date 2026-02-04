@@ -54,10 +54,16 @@ spec:
 
   # Workloads project allows specific cluster-scoped resources (CRDs for CFK operator)
   clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
     - group: apiextensions.k8s.io
       kind: CustomResourceDefinition
     - group: admissionregistration.k8s.io
       kind: ValidatingWebhookConfiguration
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
 
   # Workloads project allows namespace-scoped resources
   namespaceResourceWhitelist:
