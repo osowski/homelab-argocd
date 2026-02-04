@@ -91,7 +91,7 @@ spec:
       kind: Role
     - group: rbac.authorization.k8s.io
       kind: RoleBinding
-    - group: resource.argoproj.io
+    - group: argoproj.io
       kind: Application
     - group: platform.confluent.io
       kind: Kafka
