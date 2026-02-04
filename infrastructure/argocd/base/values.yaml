@@ -1,0 +1,97 @@
+# ArgoCD Helm Chart Base Configuration
+# This configuration enables ArgoCD to manage itself (self-management pattern)
+
+global:
+  # Domain configuration for ArgoCD UI
+  domain: argocd.example.com  # Override in cluster overlay
+
+# ArgoCD Server Configuration
+server:
+  # Enable ingress for ArgoCD UI
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      # Traefik-specific annotations for backend protocol
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+    tls: true
+
+  # Configure ArgoCD server settings
+  config:
+    # Enable anonymous access (optional, can be disabled in overlay)
+    # For production, consider OAuth or SSO
+    url: https://argocd.example.com  # Override in cluster overlay
+
+    # Resource customizations for better health checks
+    resource.customizations.health.argoproj.io_Application: |
+      hs = {}
+      hs.status = "Progressing"
+      hs.message = ""
+      if obj.status ~= nil then
+        if obj.status.health ~= nil then
+          hs.status = obj.status.health.status
+          if obj.status.health.message ~= nil then
+            hs.message = obj.status.health.message
+          end
+        end
+      end
+      return hs
+
+# ArgoCD Application Controller Configuration
+controller:
+  # Resource limits for the controller
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# ArgoCD Repo Server Configuration
+repoServer:
+  # Resource limits for repo server
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# ArgoCD Redis Configuration
+redis:
+  # Resource limits for Redis
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+
+# ArgoCD ApplicationSet Controller
+applicationSet:
+  enabled: true
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# ArgoCD Notifications Controller
+notifications:
+  enabled: false  # Can be enabled in overlay if needed
+
+# ArgoCD Dex (SSO) - disabled by default
+dex:
+  enabled: false  # Can be enabled in overlay for SSO
+
+## NOTES:
+## - This configuration is optimized for homelab environments
+## - Resource limits are conservative for small clusters
+## - TLS is enabled but certificates should be managed by cert-manager
+## - Override domain and URLs in cluster-specific overlays

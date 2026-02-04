@@ -1,0 +1,13 @@
+# ArgoCD Overlay Configuration for Portcullis Cluster
+
+global:
+  domain: argocd.portcullis.osow.ski
+
+server:
+  config:
+    url: https://argocd.portcullis.osow.ski
+
+  ingress:
+    enabled: true
+    hosts:
+      - argocd.portcullis.osow.ski
