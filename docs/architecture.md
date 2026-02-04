@@ -58,6 +58,10 @@ Platform infrastructure components deployed before workloads.
 - **cert-manager-resources** (wave 75) - Self-signed ClusterIssuer and certificate resources
 - **argocd-ingress** (wave 80) - Traefik IngressRoute for ArgoCD UI access
 
+**Deployed workloads:**
+- **confluent-operator** (wave 105) - Confluent for Kubernetes (CFK) operator for managing Confluent Platform
+- **confluent-resources** (wave 110) - Confluent Platform resources (KRaft, Kafka, Schema Registry)
+
 **Future components:**
 - **argocd** - ArgoCD self-management (currently manual install, future state target)
 - **longhorn** - Persistent storage
@@ -128,6 +132,8 @@ Bootstrap Application (sync-wave 0)
 │   │       └── (future infrastructure components)
 │   └── workloads (Parent Application, sync-wave 100)
 │       └── Watches: clusters/<cluster>/workloads/
+│           ├── confluent-operator (sync-wave 105)
+│           ├── confluent-resources (sync-wave 110)
 │           ├── http-echo (sync-wave 105)
 │           └── (future workload applications)
 ```
@@ -163,6 +169,8 @@ Applications deploy in waves using `argocd.argoproj.io/sync-wave` annotations:
 | 75 | cert-manager-resources | Self-signed ClusterIssuer and certificate resources |
 | 80 | argocd-ingress | Traefik IngressRoute for ArgoCD UI access |
 | 100 | workloads (parent) | Workloads App of Apps |
+| 105 | confluent-operator | Confluent for Kubernetes operator (CRDs and webhooks) |
+| 110 | confluent-resources | Confluent Platform resources (KRaft, Kafka, Schema Registry) |
 | 105+ | workload apps | User-facing applications |
 
 Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., CRDs before resources that use them, ingress controller before applications with ingress).
@@ -177,10 +185,11 @@ Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., 
 
 ### Workloads Project
 
-- **Scope**: Namespace-scoped only
-- **Allowed**: Deployments, Services, Ingress, ConfigMaps, Secrets, etc.
-- **Denied**: ClusterRoles, CRDs, PersistentVolumes, etc.
-- **Use case**: Application workloads
+- **Scope**: Primarily namespace-scoped with limited cluster-scoped permissions
+- **Allowed**: Deployments, Services, Ingress, ConfigMaps, Secrets, CRDs (apiextensions.k8s.io), ValidatingWebhookConfigurations, Confluent Platform CRs (platform.confluent.io)
+- **Denied**: Most cluster-scoped resources (ClusterRoles, PersistentVolumes, etc.)
+- **Use case**: Application workloads including operators that manage CRDs
+- **Note**: Enhanced RBAC added for Confluent for Kubernetes operator to manage its 22 CRDs and webhooks
 
 ## Naming Conventions
 

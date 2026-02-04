@@ -1,0 +1,21 @@
+# Optional storage class override for portcullis cluster
+# Uncomment and modify if you need to specify a different storage class
+
+# apiVersion: platform.confluent.io/v1beta1
+# kind: KRaftController
+# metadata:
+#   name: kraftcontroller
+#   namespace: confluent
+# spec:
+#   storageClass:
+#     name: longhorn
+
+# ---
+# apiVersion: platform.confluent.io/v1beta1
+# kind: Kafka
+# metadata:
+#   name: kafka
+#   namespace: confluent
+# spec:
+#   storageClass:
+#     name: longhorn

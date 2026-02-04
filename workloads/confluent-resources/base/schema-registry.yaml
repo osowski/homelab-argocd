@@ -1,0 +1,34 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: SchemaRegistry
+metadata:
+  name: schemaregistry
+  namespace: confluent
+spec:
+  # Single replica for homelab minimal deployment
+  replicas: 1
+
+  # Image configuration - defaults to latest from operator
+  image:
+    application: docker.io/confluentinc/cp-schema-registry:7.8.0
+    init: docker.io/confluentinc/confluent-init-container:2.10.0
+
+  # Resource configuration for Schema Registry
+  podTemplate:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+    # Pod metadata
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsNonRoot: true
+
+  # Dependencies - must wait for Kafka broker
+  dependencies:
+    kafka:
+      bootstrapEndpoint: kafka.confluent.svc.cluster.local:9092

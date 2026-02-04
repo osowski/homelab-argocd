@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Confluent Platform with Confluent for Kubernetes (CFK) operator**
+  - **confluent-operator** (sync-wave 105) - Helm-based CFK operator deployment
+    - Namespace-scoped mode for security
+    - Creates 22 Confluent Platform CRDs and webhooks
+    - Deployed to confluent namespace with 1 replica
+    - Resource limits: 500m CPU, 512Mi RAM
+  - **confluent-resources** (sync-wave 110) - Kustomize-based Confluent Platform resources
+    - KRaft controller (1 replica, 1 CPU, 2GB RAM, 10GB storage)
+    - Kafka broker (1 replica, 2 CPU, 4GB RAM, 50GB storage)
+    - Schema Registry (1 replica, 0.5 CPU, 1GB RAM)
+    - KRaft mode (no ZooKeeper) for simplified architecture
+    - Total resource requirements: ~4 CPU, 8GB RAM, 60GB storage
+  - Enhanced workloads project RBAC to allow CRD and webhook creation
+  - Follows cert-manager two-application pattern (operator + resources)
+  - Base manifests with portcullis cluster overlays
+  - Documentation: `docs/confluent-platform.md` with usage guide
 - **cert-manager** (sync-wave 20)
   - Helm-based deployment using OCI chart from Quay (v1.19.2)
   - Multi-source pattern with Git-based values files

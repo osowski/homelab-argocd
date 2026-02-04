@@ -52,7 +52,14 @@ spec:
     - namespace: '*'
       server: https://kubernetes.default.svc
 
-  # Workloads project only allows namespace-scoped resources
+  # Workloads project allows specific cluster-scoped resources (CRDs for CFK operator)
+  clusterResourceWhitelist:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+
+  # Workloads project allows namespace-scoped resources
   namespaceResourceWhitelist:
     - group: ''
       kind: Namespace
@@ -86,3 +93,15 @@ spec:
       kind: RoleBinding
     - group: resource.argoproj.io
       kind: Application
+    - group: platform.confluent.io
+      kind: Kafka
+    - group: platform.confluent.io
+      kind: KRaftController
+    - group: platform.confluent.io
+      kind: SchemaRegistry
+    - group: platform.confluent.io
+      kind: Connect
+    - group: platform.confluent.io
+      kind: KsqlDB
+    - group: platform.confluent.io
+      kind: ControlCenter
