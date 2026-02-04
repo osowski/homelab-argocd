@@ -2,22 +2,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kube-prometheus-stack
+  name: traefik
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "20"  # Deploy after cert-manager and storage
+    argocd.argoproj.io/sync-wave: "10"  # Deploy after cert-manager and storage
 spec:
   project: infrastructure
   source:
-    repoURL: https://prometheus-community.github.io/helm-charts
-    targetRevision: 56.6.2  # Pin to specific version
-    chart: kube-prometheus-stack
+    repoURL: oci://ghcr.io/traefik/helm/traefik
+    targetRevision: 38.0.2  # Pin to specific version
+    chart: traefik
     helm:
       valueFiles:
-        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/kube-prometheus-stack/base/values.yaml
-        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/kube-prometheus-stack/overlays/portcullis/values.yaml
+        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/base/values.yaml
+        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/overlays/portcullis/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

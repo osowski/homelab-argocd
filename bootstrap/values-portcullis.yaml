@@ -1,5 +1,0 @@
-# Portcullis cluster-specific values
-
-cluster:
-  name: "portcullis"
-  domain: "osow.ski"

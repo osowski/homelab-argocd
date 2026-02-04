@@ -13,7 +13,8 @@ spec:
   sourceRepos:
     - {{ .Values.git.repoUrl }}
     - https://prometheus-community.github.io/helm-charts
-    # TODO add cert-manager repo here
+    - oci://ghcr.io/traefik/helm/traefik
+    - oci://quay.io/jetstack/charts/cert-manager
 
   # Allow deploying to all namespaces
   destinations:
@@ -43,6 +44,7 @@ spec:
   # Allow sourcing from the main gitops repository
   sourceRepos:
     - {{ .Values.git.repoUrl }}
+    - https://packages.confluent.io/helm
 
   # Allow deploying to all namespaces
   destinations:
@@ -81,5 +83,8 @@ spec:
       kind: Role
     - group: rbac.authorization.k8s.io
       kind: RoleBinding
+<<<<<<< Updated upstream
     - group: resource.argoproj.io
       kind: Application
+=======
+>>>>>>> Stashed changes
