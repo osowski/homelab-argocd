@@ -30,9 +30,9 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true  # Required for CRDs
       - Replace=true  # Allow replacing resources with immutable field conflicts
       - Force=true  # Delete and recreate resources with immutable fields (e.g., Deployment selectors)
+      # Note: ServerSideApply removed - conflicts with Force=true and causes schema validation errors
     retry:
       limit: 5
       backoff:
