@@ -10,15 +10,18 @@ metadata:
     argocd.argoproj.io/sync-wave: "10"  # Deploy after cert-manager and storage
 spec:
   project: infrastructure
-  source:
-    repoURL: oci://ghcr.io/traefik/helm/traefik
+  sources:
+  - repoURL: oci://ghcr.io/traefik/helm/traefik
     targetRevision: 38.0.2  # Pin to specific version
     chart: traefik
     helm:
-      ignoreMissingValueFiles: true
-      valueFiles:
-        - https://github.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/base/values.yaml
-        - https://github.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/overlays/portcullis/values.yaml
+    ignoreMissingValueFiles: true
+    valueFiles:
+      - $values/infrastructure/traefik/base/values.yaml
+      - $values/infrastructure/traefik/overlays/portcullis/values.yaml
+  - repoURL: https://github.com/osowski/homelab-argocd
+    targetRevision: HEAD
+    ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
