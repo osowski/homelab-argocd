@@ -19,7 +19,7 @@ providers:
   kubernetesIngress:
     publishedService:
       enabled: true
-      pathOverride: "monitoring/traefik"  # namespace/service-name
+      pathOverride: "ingress/traefik"  # namespace/service-name
 
 ## NOTES:
 ## NodePort is required for use in kind clusters
