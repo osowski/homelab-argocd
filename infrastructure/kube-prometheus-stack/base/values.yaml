@@ -11,6 +11,10 @@
 # - Kube State Metrics
 # - Various ServiceMonitors and PrometheusRules
 
+# CRDS are explicitly excluded, in favor of kube-prometheus-stack-crds handling them
+crds:
+  enabled: false
+
 # Global settings
 global:
   rbac:
