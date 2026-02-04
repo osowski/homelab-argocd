@@ -83,8 +83,5 @@ spec:
       kind: Role
     - group: rbac.authorization.k8s.io
       kind: RoleBinding
-<<<<<<< Updated upstream
     - group: resource.argoproj.io
       kind: Application
-=======
->>>>>>> Stashed changes
