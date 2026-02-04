@@ -57,7 +57,7 @@ server:
 # ArgoCD Application Controller Configuration
 controller:
   # Add sync annotations to force recreation
-  deploymentAnnotations:
+  statefulsetAnnotations:
     argocd.argoproj.io/sync-options: "Force=true,Replace=true"
   # Resource limits for the controller
   resources:
