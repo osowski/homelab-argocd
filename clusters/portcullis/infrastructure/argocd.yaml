@@ -32,6 +32,7 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true  # Required for CRDs
       - Replace=true  # Allow replacing resources with immutable field conflicts
+      - Force=true  # Delete and recreate resources with immutable fields (e.g., Deployment selectors)
     retry:
       limit: 5
       backoff:
