@@ -4,47 +4,14 @@ metadata:
   name: kafka
   namespace: confluent
 spec:
-  # Single broker for homelab minimal deployment
   replicas: 1
-
-  # Image configuration - defaults to latest from operator
   image:
-    application: docker.io/confluentinc/cp-server:7.8.0
-    init: docker.io/confluentinc/confluent-init-container:2.10.0
-
-  # Data storage configuration
-  dataVolumeCapacity: 50Gi
-
-  # Metrics reporter disabled for minimal deployment
-  metricReporter:
-    enabled: false
-
-  # Resource configuration for Kafka broker
-  podTemplate:
-    resources:
-      requests:
-        cpu: 2000m
-        memory: 4Gi
-      limits:
-        cpu: 2000m
-        memory: 4Gi
-
-    # Pod metadata
-    podSecurityContext:
-      fsGroup: 1000
-      runAsUser: 1000
-      runAsNonRoot: true
-
-  # Dependencies - must wait for KRaft controller
+    application: confluentinc/cp-server:8.1.0
+    init: confluentinc/confluent-init-container:3.1.0
+  dataVolumeCapacity: 100Gi
   dependencies:
     kRaftController:
       clusterRef:
         name: kraftcontroller
-
-  # Listeners configuration
-  listeners:
-    internal:
-      authentication:
-        type: plain
-      tls:
-        enabled: false
+    metricsClient:
+      url: http://controlcenter.confluent.svc.cluster.local:9090

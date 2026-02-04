@@ -5,6 +5,8 @@ namespace: confluent
 
 resources:
   - namespace.yaml
+  - connect.yaml
+  - control-center.yaml
   - kraft-controller.yaml
   - kafka-broker.yaml
   - schema-registry.yaml
