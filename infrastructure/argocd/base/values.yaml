@@ -78,6 +78,7 @@ redis:
 
 ## TOOD DEBUGGING
 redisSecretInit:
+  enabled: false # This is disabled, since we assume we are taking over a previous manual installation
   serviceAccount:
     name: argocd-redis-secret-init
 ## END TODO DEBUGGING
