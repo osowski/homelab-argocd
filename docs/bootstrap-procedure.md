@@ -1,8 +1,8 @@
 # Bootstrap Procedure
 
-This document describes the detailed procedure for bootstrapping ArgoCD on a new or existing Kubernetes cluster.
+This document describes the procedure for deploying the bootstrap Application to a cluster that already has ArgoCD installed.
 
-> TODO The majority of this doc is duplicative of `cluster-onboarding.md`. This should be folded into `cluster-onboarding.md` instead.
+**For complete cluster onboarding** (including ArgoCD installation and cluster setup), see [Cluster Onboarding](cluster-onboarding.md).
 
 ## Prerequisites
 
@@ -426,6 +426,9 @@ After successful bootstrap:
 
 ## Next Steps
 
-- Add new applications: [Adding Applications](adding-applications.md)
-- Onboard new clusters: [Cluster Onboarding](cluster-onboarding.md)
-- Understand architecture: [Architecture](architecture.md)
+After successful bootstrap:
+
+- **Add applications to the cluster**: [Adding Applications](adding-applications.md)
+- **Set up additional clusters**: [Cluster Onboarding](cluster-onboarding.md)
+- **Review system architecture**: [Architecture](architecture.md)
+- **Learn advanced Helm patterns**: [Adding Helm Workloads](adding-helm-workloads.md)

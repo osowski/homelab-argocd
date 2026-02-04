@@ -1,9 +1,15 @@
 # Adding Applications
 
-This guide walks through adding a new application to the GitOps repository.
+This guide walks through adding a new application to an existing cluster in the GitOps repository.
+
+**Related guides:**
+- **[Cluster Onboarding](cluster-onboarding.md)** - Setting up a new cluster from scratch
+- **[Bootstrap Procedure](bootstrap-procedure.md)** - Deploying bootstrap to an existing cluster
+- **[Adding Helm Workloads](adding-helm-workloads.md)** - Comprehensive Helm deployment guide with advanced patterns
 
 ## Prerequisites
 
+- Cluster already onboarded with bootstrap deployed
 - Basic knowledge of Kubernetes manifests
 - Familiarity with Kustomize or Helm
 - Access to this Git repository
@@ -505,6 +511,7 @@ Set conservative defaults in base, increase in overlay if needed.
 
 ## Next Steps
 
-- Review [Architecture](architecture.md) for system design
-- See [Bootstrap Procedure](bootstrap-procedure.md) for cluster setup
-- Explore [Cluster Onboarding](cluster-onboarding.md) for adding clusters
+- **Advanced Helm patterns**: [Adding Helm Workloads](adding-helm-workloads.md) - Comprehensive guide with real-world examples
+- **System architecture**: [Architecture](architecture.md) - Understand the overall design and patterns
+- **Bootstrap operations**: [Bootstrap Procedure](bootstrap-procedure.md) - Manage bootstrap configuration
+- **New cluster setup**: [Cluster Onboarding](cluster-onboarding.md) - Onboard additional clusters
