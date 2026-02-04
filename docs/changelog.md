@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- ArgoCD self-management application
+  - Helm-based deployment using official argo-cd chart (v7.7.14)
+  - Base configuration with resource limits for homelab environments
+  - Portcullis cluster overlay with domain-specific settings
+  - Ingress enabled with Traefik integration
+  - Sync wave 5 for early deployment before other infrastructure
+  - ignoreDifferences for webhook CA bundles and auto-generated secrets
+  - ArgoCD now manages its own configuration through Git
 - Comprehensive Helm deployment guide (`docs/adding-helm-workloads.md`)
   - Detailed walkthroughs for infrastructure and workload applications
   - Real-world examples with cert-manager and Grafana

@@ -10,6 +10,8 @@ This document describes the procedure for deploying the bootstrap Application to
 
 - Kubernetes cluster (1.25+)
 - ArgoCD installed in `argocd` namespace
+  - Manual installation required for initial bootstrap (chicken-and-egg)
+  - After bootstrap, ArgoCD will manage itself through the self-management Application
 - `kubectl` configured with admin access
 - `helm` CLI installed (3.x)
 
@@ -197,30 +199,12 @@ Login with username `admin` and the password from above.
 
 ### Create Ingress (Production)
 
-For production access, create an ingress:
+> **Note**: With ArgoCD self-management enabled, ingress is automatically configured through the ArgoCD Application manifest. See `infrastructure/argocd/base/values.yaml` for ingress configuration and `infrastructure/argocd/overlays/<cluster>/values.yaml` for cluster-specific hostnames.
 
-**`clusters/<cluster>/infrastructure/argocd-ingress.yaml`** (future enhancement)
-```yaml
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: argocd-ingress
-  namespace: argocd
-spec:
-  project: infrastructure
-  source:
-    repoURL: https://github.com/osowski/homelab-argocd.git
-    targetRevision: HEAD
-    path: infrastructure/argocd-ingress/overlays/<cluster>
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: argocd
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-```
+The self-managed ArgoCD Application includes ingress configuration:
+- Ingress enabled with Traefik integration
+- Hostname: `argocd.<cluster>.<domain>` (e.g., `argocd.portcullis.osow.ski`)
+- TLS enabled (certificates managed externally or by cert-manager)
 
 ## Troubleshooting
 

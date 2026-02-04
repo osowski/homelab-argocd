@@ -50,9 +50,10 @@ Standalone Project definitions for reference. These are also created by the boot
 
 Platform infrastructure components deployed before workloads.
 
-**Implemented components:**
-- **traefik** - Ingress controller (sync-wave 10)
-- **kube-prometheus-stack** - Monitoring stack with Prometheus, Grafana, and Alertmanager (sync-wave 20)
+**Deployed components:**
+- argocd - ArgoCD self-management (manages its own configuration)
+- kube-prometheus-stack - Monitoring and alerting
+- traefik - Ingress controller
 
 **Future components:**
 - argocd - ArgoCD self-management
@@ -342,9 +343,29 @@ kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller
 2. Check that child Application manifests are valid YAML
 3. Review parent Application logs for errors
 
+## ArgoCD Self-Management
+
+ArgoCD manages its own deployment and configuration through a dedicated Application manifest. This follows the GitOps principle where ArgoCD:
+
+1. **Initial Bootstrap**: Manually installed via Helm or kubectl (chicken-and-egg requirement)
+2. **Self-Management**: ArgoCD Application manifest deploys and manages ArgoCD via the official Helm chart
+3. **Declarative Updates**: Configuration changes are made through Git commits, not manual kubectl commands
+
+**Benefits:**
+- Consistent GitOps workflow for all infrastructure
+- Version-controlled ArgoCD configuration
+- Automated updates and rollbacks
+- Audit trail for all changes
+
+**Implementation:**
+- Helm chart: `argo-cd` from `https://argoproj.github.io/argo-helm`
+- Base values: `infrastructure/argocd/base/values.yaml`
+- Cluster overlays: `infrastructure/argocd/overlays/<cluster>/values.yaml`
+- Application manifest: `clusters/<cluster>/infrastructure/argocd.yaml`
+- Sync wave: `5` (early deployment, before other infrastructure)
+
 ## Future Enhancements
 
-- ArgoCD self-management (ArgoCD manages its own configuration)
 - ApplicationSets for multi-cluster templating
 - Progressive delivery with Argo Rollouts
 - Sealed Secrets or External Secrets Operator
