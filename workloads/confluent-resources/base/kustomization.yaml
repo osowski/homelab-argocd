@@ -9,8 +9,9 @@ resources:
   - namespace.yaml
   - connect.yaml
   - control-center.yaml
-  - kraft-controller.yaml
   - kafka-broker.yaml
+  - kraft-controller.yaml
+  - ksqldb.yaml
   - schema-registry.yaml
 
 commonLabels:
