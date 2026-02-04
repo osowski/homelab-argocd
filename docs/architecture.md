@@ -24,15 +24,19 @@ Developer commits to Git
 
 The bootstrap Helm chart is the entry point. It creates:
 - ArgoCD Project CRDs (infrastructure, workloads)
-- Parent Applications (infrastructure-apps, workloads-apps)
+- Parent Applications (infrastructure, workloads)
 
 **Key files:**
 - `Chart.yaml` - Helm chart metadata
-- `values.yaml` - Default configuration
-- `values-<cluster>.yaml` - Cluster-specific overrides
+- `values.yaml` - Default configuration values
 - `templates/argocd-projects.yaml` - Project definitions
 - `templates/infrastructure.yaml` - Infrastructure App of Apps
 - `templates/workloads.yaml` - Workloads App of Apps
+
+**Cluster-specific bootstrap:**
+- `clusters/<cluster>/bootstrap.yaml` - ArgoCD Application that deploys the bootstrap chart
+- Uses inline `valuesObject` to specify cluster name and domain
+- Deployed with sync-wave `0` (highest priority)
 
 ### ArgoCD Projects (`argocd-projects/`)
 
@@ -46,19 +50,26 @@ Standalone Project definitions for reference. These are also created by the boot
 
 Platform infrastructure components deployed before workloads.
 
+**Implemented components:**
+- **traefik** - Ingress controller (sync-wave 10)
+- **kube-prometheus-stack** - Monitoring stack with Prometheus, Grafana, and Alertmanager (sync-wave 20)
+
 **Future components:**
+- argocd - ArgoCD self-management
 - cert-manager - TLS certificate management
 - longhorn - Persistent storage
-- kube-prometheus-stack - Monitoring and alerting
 - external-dns - DNS automation
 
 **Structure:**
 ```
 infrastructure/<component>/
-├── base/              # Base manifests or Helm values
-└── overlays/          # Cluster-specific customization
-    └── <cluster>/
+├── base/
+│   └── values.yaml           # Base Helm values (shared across clusters)
+└── overlays/<cluster>/
+    └── values.yaml           # Cluster-specific Helm value overrides
 ```
+
+Infrastructure components use Helm charts from upstream repositories with values files stored in Git.
 
 ### Workloads (`workloads/`)
 
@@ -86,26 +97,35 @@ Cluster-specific application instances. Parent Applications watch these director
 **Structure:**
 ```
 clusters/<cluster>/
+├── bootstrap.yaml              # Bootstrap Application (sync-wave 0)
 ├── infrastructure/
-│   └── <app>.yaml     # ArgoCD Application CRD
+│   ├── kustomization.yaml      # Lists all infrastructure applications
+│   └── <app>.yaml              # ArgoCD Application CRDs
 └── workloads/
-    └── <app>.yaml     # ArgoCD Application CRD
+    ├── kustomization.yaml      # Lists all workload applications
+    └── <app>.yaml              # ArgoCD Application CRDs
 ```
+
+The `kustomization.yaml` files serve as an index of applications for each layer and are monitored by the parent Applications.
 
 ## Application Hierarchy
 
 ```
-Bootstrap (Helm)
-├── ArgoCD Projects
-│   ├── infrastructure
-│   └── workloads
-├── infrastructure-apps (Parent Application)
-│   └── clusters/<cluster>/infrastructure/*.yaml
-│       └── Individual infrastructure Applications
-└── workloads-apps (Parent Application)
-    └── clusters/<cluster>/workloads/*.yaml
-        └── Individual workload Applications
+Bootstrap Application (sync-wave 0)
+├── Deploys bootstrap Helm chart
+│   ├── ArgoCD Projects (infrastructure, workloads)
+│   ├── infrastructure (Parent Application, sync-wave 1)
+│   │   └── Watches: clusters/<cluster>/infrastructure/
+│   │       ├── traefik (sync-wave 10)
+│   │       ├── kube-prometheus-stack (sync-wave 20)
+│   │       └── (future infrastructure components)
+│   └── workloads (Parent Application, sync-wave 100)
+│       └── Watches: clusters/<cluster>/workloads/
+│           ├── http-echo (sync-wave 105)
+│           └── (future workload applications)
 ```
+
+Sync waves ensure infrastructure is deployed before workloads, and components deploy in the correct order.
 
 ## Sync Policies
 
@@ -117,7 +137,24 @@ All applications use automated sync with:
 
 ### Sync Options
 
+Common sync options used across applications:
 - `CreateNamespace=true` - Automatically create target namespaces
+- `ServerSideApply=true` - Used for infrastructure components with CRDs
+
+### Sync Waves
+
+Applications deploy in waves using `argocd.argoproj.io/sync-wave` annotations:
+
+| Wave | Component | Purpose |
+|------|-----------|---------|
+| 0 | bootstrap | Creates Projects and Parent Applications |
+| 1 | infrastructure (parent) | Infrastructure App of Apps |
+| 10 | traefik | Ingress controller |
+| 20 | kube-prometheus-stack | Monitoring stack |
+| 100 | workloads (parent) | Workloads App of Apps |
+| 105+ | workload apps | User-facing applications |
+
+Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., ingress controller before applications with ingress).
 
 ## RBAC Boundaries
 
@@ -173,30 +210,57 @@ Used for:
 - Complex infrastructure components
 - Applications with many configuration options
 - Components with upstream Helm charts
-- Example: kube-prometheus-stack, cert-manager
+- Example: kube-prometheus-stack, traefik, cert-manager
 
 **Pros**: Rich templating, upstream support, values-based config
 **Cons**: More complex, templating can be opaque
+
+**Multi-Source Pattern:**
+Infrastructure applications use ArgoCD's multi-source feature to combine:
+1. Upstream Helm chart from OCI registry or Helm repository
+2. Values files from this Git repository (base + cluster overlay)
+
+Example Application sources:
+```yaml
+sources:
+  - repoURL: oci://ghcr.io/traefik/helm/traefik
+    targetRevision: 38.0.2
+    chart: traefik
+    helm:
+      valueFiles:
+        - $values/infrastructure/traefik/base/values.yaml
+        - $values/infrastructure/traefik/overlays/portcullis/values.yaml
+  - repoURL: https://github.com/osowski/homelab-argocd
+    targetRevision: HEAD
+    ref: values
+```
+
+The `$values` reference points to the Git repository source, allowing values files to be version-controlled separately from the chart.
 
 ## Adding a New Application
 
 See [Adding Applications](adding-applications.md) for detailed instructions.
 
 **Quick steps:**
-1. Create base manifests in `workloads/<app>/base/`
-2. Create cluster overlay in `workloads/<app>/overlays/<cluster>/`
-3. Create ArgoCD Application in `clusters/<cluster>/workloads/<app>.yaml`
-4. Commit and push to Git
-5. ArgoCD automatically creates and syncs the application
+1. Create base manifests in `workloads/<app>/base/` or `infrastructure/<app>/base/`
+2. Create cluster overlay in `workloads/<app>/overlays/<cluster>/` or `infrastructure/<app>/overlays/<cluster>/`
+3. Create ArgoCD Application in `clusters/<cluster>/workloads/<app>.yaml` or `clusters/<cluster>/infrastructure/<app>.yaml`
+4. Add application to `clusters/<cluster>/workloads/kustomization.yaml` or `clusters/<cluster>/infrastructure/kustomization.yaml`
+5. Add sync-wave annotation if deployment order matters
+6. Commit and push to Git
+7. Parent Application automatically discovers and syncs the new application
 
 ## Multi-Cluster Support
 
 To add a new cluster:
-1. Create `bootstrap/values-<cluster>.yaml`
-2. Create `clusters/<cluster>/infrastructure/` directory
-3. Create `clusters/<cluster>/workloads/` directory
-4. Add applications to cluster directories
-5. Deploy bootstrap to the new cluster
+1. Create `clusters/<cluster>/` directory structure
+2. Create `clusters/<cluster>/bootstrap.yaml` with cluster-specific `valuesObject`
+3. Create `clusters/<cluster>/infrastructure/kustomization.yaml`
+4. Create `clusters/<cluster>/workloads/kustomization.yaml`
+5. Add applications to cluster directories
+6. Deploy bootstrap Application to the new cluster
+
+Each cluster has independent configuration via its bootstrap.yaml file, which specifies the cluster name and domain.
 
 See [Cluster Onboarding](cluster-onboarding.md) for details.
 

@@ -56,33 +56,87 @@ mkdir -p clusters/<cluster-name>/infrastructure
 mkdir -p clusters/<cluster-name>/workloads
 ```
 
-Create a `.gitkeep` file to preserve empty directories:
+Create kustomization files for each layer:
 
-```bash
-touch clusters/<cluster-name>/infrastructure/.gitkeep
-touch clusters/<cluster-name>/workloads/.gitkeep
+**`clusters/<cluster-name>/infrastructure/kustomization.yaml`**
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources: []
+# Add infrastructure applications here as they are created
+# Example:
+# - traefik.yaml
+# - kube-prometheus-stack.yaml
 ```
 
-## Step 3: Create Cluster-Specific Values
-
-Create a values file for the cluster:
-
-**`bootstrap/values-<cluster-name>.yaml`**
+**`clusters/<cluster-name>/workloads/kustomization.yaml`**
 ```yaml
-cluster:
-  name: "<cluster-name>"
-  domain: "osow.ski"
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources: []
+# Add workload applications here as they are created
+# Example:
+# - http-echo.yaml
+```
+
+## Step 3: Create Bootstrap Application
+
+Create a bootstrap Application manifest for the cluster:
+
+**`clusters/<cluster-name>/bootstrap.yaml`**
+```yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bootstrap
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osowski/homelab-argocd.git
+    targetRevision: HEAD
+    path: bootstrap
+    helm:
+      valuesObject:
+        cluster:
+          name: <cluster-name>
+          domain: osow.ski
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
 ```
 
 Adjust the domain if different for this cluster.
 
-## Step 4: Test Bootstrap Rendering
+## Step 4: Validate Bootstrap Configuration
 
-Validate the bootstrap configuration:
+Validate the bootstrap Application manifest:
+
+```bash
+kubectl apply --dry-run=client -f clusters/<cluster-name>/bootstrap.yaml
+```
+
+Expected output: `application.argoproj.io/bootstrap created (dry run)`
+
+Optionally, validate what the bootstrap chart will create:
 
 ```bash
 helm template bootstrap ./bootstrap/ \
-  --values ./bootstrap/values-<cluster-name>.yaml
+  --set cluster.name=<cluster-name> \
+  --set cluster.domain=osow.ski
 ```
 
 Review the output:
@@ -95,7 +149,6 @@ Review the output:
 Commit the new cluster configuration:
 
 ```bash
-git add bootstrap/values-<cluster-name>.yaml
 git add clusters/<cluster-name>/
 git commit -m "Add <cluster-name> cluster configuration"
 git push
@@ -103,15 +156,13 @@ git push
 
 ## Step 6: Deploy Bootstrap to Cluster
 
-Deploy the bootstrap to the new cluster:
+Deploy the bootstrap Application to the new cluster:
 
 ```bash
-helm template bootstrap ./bootstrap/ \
-  --values ./bootstrap/values-<cluster-name>.yaml \
-  | kubectl apply -f -
+kubectl apply -f clusters/<cluster-name>/bootstrap.yaml
 ```
 
-Verify the bootstrap was created:
+Verify the bootstrap Application was created:
 
 ```bash
 kubectl get applications -n argocd
@@ -119,10 +170,13 @@ kubectl get applications -n argocd
 
 Expected output:
 ```
-NAME                  SYNC STATUS   HEALTH STATUS
-infrastructure-apps   Synced        Healthy
-workloads-apps        Synced        Healthy
+NAME             SYNC STATUS   HEALTH STATUS
+bootstrap        Synced        Healthy
+infrastructure   Synced        Healthy
+workloads        Synced        Healthy
 ```
+
+The bootstrap Application creates the ArgoCD Projects and parent Applications.
 
 ## Step 7: Add Applications to Cluster
 
@@ -142,6 +196,8 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "105"
 spec:
   project: workloads
   source:
@@ -157,6 +213,17 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+```
+
+Add to kustomization:
+
+**`clusters/<cluster-name>/workloads/kustomization.yaml`**
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - http-echo.yaml
 ```
 
 ### Create Overlay for the Application
@@ -204,6 +271,7 @@ Commit and push:
 ```bash
 git add workloads/http-echo/overlays/<cluster-name>/
 git add clusters/<cluster-name>/workloads/http-echo.yaml
+git add clusters/<cluster-name>/workloads/kustomization.yaml
 git commit -m "Add http-echo to <cluster-name> cluster"
 git push
 ```
@@ -319,11 +387,16 @@ kubectl get applications -n argocd -w
 
 ### Step 3: Remove Bootstrap
 
-Delete parent Applications:
+Delete the bootstrap Application (will cascade to parent and child Applications):
 
 ```bash
-kubectl delete application infrastructure-apps -n argocd
-kubectl delete application workloads-apps -n argocd
+kubectl delete application bootstrap -n argocd
+```
+
+Wait for all Applications to be removed:
+
+```bash
+kubectl get applications -n argocd -w
 ```
 
 ### Step 4: Uninstall ArgoCD (Optional)
@@ -334,12 +407,11 @@ kubectl delete namespace argocd
 
 ### Step 5: Clean Up Repository
 
-Remove cluster-specific files:
+The cluster directory was already removed in Step 1. Verify no orphaned files remain:
 
 ```bash
-rm bootstrap/values-<cluster-name>.yaml
-git commit -m "Remove <cluster-name> bootstrap configuration"
-git push
+ls -la clusters/<cluster-name>/  # Should not exist
+git status  # Should show clean working tree
 ```
 
 ## Troubleshooting
