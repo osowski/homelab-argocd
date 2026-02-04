@@ -51,15 +51,17 @@ Standalone Project definitions for reference. These are also created by the boot
 Platform infrastructure components deployed before workloads.
 
 **Deployed components:**
-- argocd - ArgoCD self-management (manages its own configuration)
-- kube-prometheus-stack - Monitoring and alerting
-- traefik - Ingress controller
+- **kube-prometheus-stack-crds** (wave 2) - Prometheus Operator CRDs deployed early for availability
+- **traefik** (wave 10) - Ingress controller for external access
+- **kube-prometheus-stack** (wave 20) - Monitoring stack with Prometheus, Grafana, Alertmanager
+- **cert-manager** (wave 20) - TLS certificate management
+- **cert-manager-resources** (wave 75) - Self-signed ClusterIssuer and certificate resources
+- **argocd-ingress** (wave 80) - Traefik IngressRoute for ArgoCD UI access
 
 **Future components:**
-- argocd - ArgoCD self-management
-- cert-manager - TLS certificate management
-- longhorn - Persistent storage
-- external-dns - DNS automation
+- **argocd** - ArgoCD self-management (currently manual install, future state target)
+- **longhorn** - Persistent storage
+- **external-dns** - DNS automation
 
 **Structure:**
 ```
@@ -117,8 +119,12 @@ Bootstrap Application (sync-wave 0)
 │   ├── ArgoCD Projects (infrastructure, workloads)
 │   ├── infrastructure (Parent Application, sync-wave 1)
 │   │   └── Watches: clusters/<cluster>/infrastructure/
+│   │       ├── kube-prometheus-stack-crds (sync-wave 2)
 │   │       ├── traefik (sync-wave 10)
 │   │       ├── kube-prometheus-stack (sync-wave 20)
+│   │       ├── cert-manager (sync-wave 20)
+│   │       ├── cert-manager-resources (sync-wave 75)
+│   │       ├── argocd-ingress (sync-wave 80)
 │   │       └── (future infrastructure components)
 │   └── workloads (Parent Application, sync-wave 100)
 │       └── Watches: clusters/<cluster>/workloads/
@@ -126,7 +132,7 @@ Bootstrap Application (sync-wave 0)
 │           └── (future workload applications)
 ```
 
-Sync waves ensure infrastructure is deployed before workloads, and components deploy in the correct order.
+Sync waves ensure infrastructure is deployed before workloads, and components deploy in the correct order (e.g., CRDs before resources that use them, cert-manager before certificates).
 
 ## Sync Policies
 
@@ -150,12 +156,16 @@ Applications deploy in waves using `argocd.argoproj.io/sync-wave` annotations:
 |------|-----------|---------|
 | 0 | bootstrap | Creates Projects and Parent Applications |
 | 1 | infrastructure (parent) | Infrastructure App of Apps |
-| 10 | traefik | Ingress controller |
-| 20 | kube-prometheus-stack | Monitoring stack |
+| 2 | kube-prometheus-stack-crds | Prometheus Operator CRDs for early availability |
+| 10 | traefik | Ingress controller for external access |
+| 20 | kube-prometheus-stack | Monitoring stack (Prometheus, Grafana, Alertmanager) |
+| 20 | cert-manager | TLS certificate management |
+| 75 | cert-manager-resources | Self-signed ClusterIssuer and certificate resources |
+| 80 | argocd-ingress | Traefik IngressRoute for ArgoCD UI access |
 | 100 | workloads (parent) | Workloads App of Apps |
 | 105+ | workload apps | User-facing applications |
 
-Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., ingress controller before applications with ingress).
+Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., CRDs before resources that use them, ingress controller before applications with ingress).
 
 ## RBAC Boundaries
 
@@ -345,24 +355,32 @@ kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller
 
 ## ArgoCD Self-Management
 
-ArgoCD manages its own deployment and configuration through a dedicated Application manifest. This follows the GitOps principle where ArgoCD:
+**Current State:** ArgoCD is manually installed and not yet self-managed via GitOps.
+
+**Future State:** ArgoCD will manage its own deployment and configuration through a dedicated Application manifest. This follows the GitOps principle where ArgoCD:
 
 1. **Initial Bootstrap**: Manually installed via Helm or kubectl (chicken-and-egg requirement)
 2. **Self-Management**: ArgoCD Application manifest deploys and manages ArgoCD via the official Helm chart
 3. **Declarative Updates**: Configuration changes are made through Git commits, not manual kubectl commands
 
-**Benefits:**
+**Benefits of Future Self-Management:**
 - Consistent GitOps workflow for all infrastructure
 - Version-controlled ArgoCD configuration
 - Automated updates and rollbacks
 - Audit trail for all changes
 
-**Implementation:**
+**Current Access:**
+- ArgoCD UI accessible via argocd-ingress Application (Traefik IngressRoute)
+- Hostname pattern: `argocd.<cluster>.<domain>` (e.g., argocd.portcullis.osow.ski)
+- TLS certificates managed by cert-manager
+
+**Future Implementation Plan:**
 - Helm chart: `argo-cd` from `https://argoproj.github.io/argo-helm`
 - Base values: `infrastructure/argocd/base/values.yaml`
 - Cluster overlays: `infrastructure/argocd/overlays/<cluster>/values.yaml`
 - Application manifest: `clusters/<cluster>/infrastructure/argocd.yaml`
 - Sync wave: `5` (early deployment, before other infrastructure)
+- See [ArgoCD Self-Management Guide](argocd-self-management.md) for transition procedure
 
 ## Future Enhancements
 

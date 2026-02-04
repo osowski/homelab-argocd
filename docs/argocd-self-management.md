@@ -1,22 +1,66 @@
-# Argo CD Self-Management Guide
+# ArgoCD Self-Management Guide
 
-This document describes the transition from manual Argo CD installation to Helm-based self-management for homelab/demo environments.
+> **⚠️ FUTURE STATE TARGET - NOT CURRENTLY IMPLEMENTED**
+>
+> This document describes a **future state architecture** for ArgoCD self-management via GitOps.
+>
+> **Current State:**
+> - ArgoCD is manually installed via `kubectl apply -f manual-argocd-install.yaml`
+> - ArgoCD configuration is managed manually, not via Git
+> - ArgoCD UI access is provided via the `argocd-ingress` Application (Traefik IngressRoute)
+>
+> **Why Deferred:**
+> - Focus on deploying infrastructure components first (cert-manager, monitoring, ingress)
+> - Manual installation is simpler for initial cluster setup
+> - Self-management adds complexity with immutable field challenges
+> - This documentation is preserved for future reference when ready to transition
+>
+> **When to Implement:**
+> - After infrastructure components are stable and validated
+> - When ready to manage ArgoCD configuration declaratively via Git
+> - When comfortable with the transition procedure and potential downtime
 
-**Context:** This procedure addresses the specific challenge of migrating a manually-installed Argo CD instance to GitOps self-management while handling immutable Kubernetes field constraints.
+---
 
 ## Table of Contents
 
-1. [Problem Statement](#problem-statement)
-2. [Solution Overview](#solution-overview)
-3. [Prerequisites](#prerequisites)
-4. [Transition Procedure](#transition-procedure)
-5. [Troubleshooting](#troubleshooting)
-6. [Post-Migration](#post-migration)
-7. [References](#references)
+1. [Overview](#overview)
+2. [Problem Statement](#problem-statement)
+3. [Solution Overview](#solution-overview)
+4. [Prerequisites](#prerequisites)
+5. [Transition Procedure](#transition-procedure)
+6. [Troubleshooting](#troubleshooting)
+7. [Post-Migration](#post-migration)
+8. [References](#references)
+
+---
+
+## Overview
+
+ArgoCD self-management allows ArgoCD to manage its own deployment and configuration through GitOps. This follows the principle where ArgoCD:
+
+1. **Initial Bootstrap**: Manually installed via Helm or kubectl (chicken-and-egg requirement)
+2. **Self-Management**: ArgoCD Application manifest deploys and manages ArgoCD via the official Helm chart
+3. **Declarative Updates**: Configuration changes are made through Git commits, not manual kubectl commands
+
+**Benefits:**
+- Consistent GitOps workflow for all infrastructure
+- Version-controlled ArgoCD configuration
+- Automated updates and rollbacks
+- Audit trail for all changes
+
+**Architecture:**
+- Helm chart: `argo-cd` from `https://argoproj.github.io/argo-helm`
+- Base values: `infrastructure/argocd/base/values.yaml`
+- Cluster overlays: `infrastructure/argocd/overlays/<cluster>/values.yaml`
+- Application manifest: `clusters/<cluster>/infrastructure/argocd.yaml`
+- Sync wave: `5` (early deployment, before other infrastructure)
 
 ---
 
 ## Problem Statement
+
+### Challenge: Immutable Kubernetes Fields
 
 Kubernetes Deployment selectors are **immutable** - once created, they cannot be changed.
 
@@ -35,7 +79,13 @@ selector:
     app.kubernetes.io/instance: argocd
 ```
 
-Since selectors cannot be changed, existing Deployments must be deleted and recreated.
+Since selectors cannot be changed, existing Deployments must be deleted and recreated during the transition.
+
+### Impact
+
+- **Downtime**: Brief ArgoCD UI/API unavailability during Deployment recreation (1-3 minutes)
+- **Service Disruption**: Pods are deleted and recreated with new labels
+- **Endpoint Mismatch**: Services cannot select pods until new selectors are applied
 
 ---
 
@@ -65,14 +115,26 @@ For this self-managed demo environment:
 - These strategies are mutually exclusive - using both causes validation errors
 - **For production:** Re-enable ServerSideApply after transition and remove Force=true
 
+### Preserving Secrets
+
+The Helm values include `configs.secret.createSecret: false` to preserve existing secrets:
+- `argocd-secret` - Admin password and authentication tokens
+- `argocd-redis` - Redis authentication
+- `argocd-notifications-secret` - Notification integrations
+
 ---
 
 ## Prerequisites
 
-- ✅ Manual Argo CD installation already running
-- ✅ Application manifest in Git with `Force=true` sync option
+Before transitioning to self-management:
+
+- ✅ Manual ArgoCD installation already running
+- ✅ Bootstrap Application deployed and syncing
+- ✅ Infrastructure components stable (traefik, cert-manager)
+- ✅ Application manifest committed to Git with `Force=true` sync option
 - ✅ Values configured with `configs.secret.createSecret: false` to preserve secrets
-- ✅ Git repository access configured
+- ✅ Git repository access configured in ArgoCD
+- ✅ Backup of current ArgoCD configuration (optional but recommended)
 
 ---
 
@@ -81,7 +143,7 @@ For this self-managed demo environment:
 ### Step 1: Verify Current State
 
 ```bash
-# Verify Argo CD is running
+# Verify ArgoCD is running
 kubectl get deployments -n argocd
 
 # Check current Deployment selectors (should NOT have instance label)
@@ -90,26 +152,70 @@ kubectl get deployment argocd-server -n argocd -o jsonpath='{.spec.selector}'
 
 Expected: Selector WITHOUT `app.kubernetes.io/instance`.
 
-### Step 2: Apply Self-Management Application
+### Step 2: Prepare Application Manifest
+
+Ensure the Application manifest is ready at `clusters/<cluster>/infrastructure/argocd.yaml`:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: infrastructure
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      targetRevision: 7.7.14
+      chart: argo-cd
+      helm:
+        valueFiles:
+          - $values/infrastructure/argocd/base/values.yaml
+          - $values/infrastructure/argocd/overlays/<cluster>/values.yaml
+    - repoURL: https://github.com/osowski/homelab-argocd
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+      - Force=true
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: argocd-secret
+      jsonPointers:
+        - /data
+```
+
+### Step 3: Apply Self-Management Application
 
 The `Force=true` sync option automatically handles deletion and recreation.
 
 ```bash
 # Apply the Application manifest
-kubectl apply -f clusters/portcullis/infrastructure/argocd.yaml
+kubectl apply -f clusters/<cluster>/infrastructure/argocd.yaml
 
 # Watch the sync process
 kubectl get applications -n argocd argocd -w
 ```
 
 **Expected behavior:**
-1. Argo CD detects selector mismatch
+1. ArgoCD detects selector mismatch
 2. Deletes existing Deployments (brief downtime)
 3. Creates new Deployments with correct selectors
 4. Pods start with correct labels
 5. Services select pods successfully
 
-### Step 3: Verify Recreation
+### Step 4: Verify Recreation
 
 ```bash
 # Watch Deployments being recreated
@@ -129,7 +235,7 @@ Expected output:
 }
 ```
 
-### Step 4: Verify Service Endpoints
+### Step 5: Verify Service Endpoints
 
 ```bash
 # Check Services can now select pods
@@ -138,14 +244,14 @@ kubectl get endpoints -n argocd
 # All services should have endpoints
 ```
 
-### Step 5: Test Access
+### Step 6: Test Access
 
 ```bash
-# Port forward
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+# Test via Ingress (if argocd-ingress is deployed)
+curl -k https://argocd.<cluster>.<domain>
 
-# Or test via Ingress
-curl -k https://argocd.portcullis.osow.ski
+# Or port forward
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 ---
@@ -158,7 +264,7 @@ Based on [GitHub Issue #14910](https://github.com/argoproj/argo-cd/issues/14910)
 
 #### Cause 1: Diff Not Detected
 
-Argo CD's diff algorithm may skip immutable fields, preventing OutOfSync status.
+ArgoCD's diff algorithm may skip immutable fields, preventing OutOfSync status.
 
 **Diagnostic:**
 ```bash
@@ -175,13 +281,13 @@ Helm's three-way merge may skip immutable fields rather than triggering deletion
 
 #### Cause 3: Self-Management Protection
 
-Argo CD may protect against deleting its own critical components.
+ArgoCD may protect against deleting its own critical components.
 
 ### Solution 1: Resource-Level Annotations
 
 Add sync annotations directly to Deployments via Helm values (more explicit than Application-level).
 
-**Already configured** in `infrastructure/argocd/base/values.yaml`:
+**Configure in `infrastructure/argocd/base/values.yaml`:**
 ```yaml
 server:
   deploymentAnnotations:
@@ -209,7 +315,38 @@ kubectl patch application argocd -n argocd --type merge -p '{"operation":{"sync"
 
 Use a Sync Hook to explicitly delete Deployments before sync.
 
-**Available at:** `infrastructure/argocd/base/presync-delete-deployments.yaml`
+**Create `infrastructure/argocd/base/presync-delete-deployments.yaml`:**
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: argocd-presync-delete-deployments
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  template:
+    spec:
+      serviceAccountName: argocd-application-controller
+      containers:
+        - name: delete-deployments
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl delete deployment -n argocd \
+                argocd-server \
+                argocd-repo-server \
+                argocd-redis \
+                argocd-applicationset-controller \
+                argocd-notifications-controller \
+                argocd-dex-server || true
+              kubectl delete statefulset argocd-application-controller -n argocd || true
+      restartPolicy: Never
+  backoffLimit: 2
+```
 
 **One-time manual application:**
 ```bash
@@ -244,7 +381,7 @@ kubectl delete statefulset argocd-application-controller -n argocd
 kubectl patch application argocd -n argocd --type merge -p '{"operation":{"sync":{}}}'
 ```
 
-**Downtime:** 1-3 minutes (Argo CD UI/API only)
+**Downtime:** 1-3 minutes (ArgoCD UI/API only)
 
 ### Common Error: ServerSideApply Schema Validation
 
@@ -261,7 +398,7 @@ error calculating structured merge diff: error building typed value from live re
 - Conflicts with `Force=true` strategy
 
 **Solution:**
-Remove `ServerSideApply=true` from sync options (already done in `clusters/portcullis/infrastructure/argocd.yaml`).
+Remove `ServerSideApply=true` from sync options in the Application manifest.
 
 ---
 
@@ -308,7 +445,20 @@ git push
 
 **Why?** Force=true causes deletion/recreation on EVERY sync, wasting resources and causing unnecessary downtime.
 
+### Update Kustomization
+
+Add the argocd Application to the cluster's infrastructure kustomization:
+
+```bash
+# Edit clusters/<cluster>/infrastructure/kustomization.yaml
+# Uncomment or add argocd.yaml to resources list
+git commit -m "Enable ArgoCD self-management"
+git push
+```
+
 ### Rollback (if needed)
+
+If issues occur, revert to manual installation:
 
 ```bash
 kubectl apply -n argocd --server-side --force-conflicts \
@@ -319,7 +469,21 @@ kubectl apply -n argocd --server-side --force-conflicts \
 
 ## References
 
-- [Argo CD Sync Options Documentation](https://argo-cd.readthedocs.io/en/latest/user-guide/sync-options/)
+- [ArgoCD Sync Options Documentation](https://argo-cd.readthedocs.io/en/latest/user-guide/sync-options/)
 - [GitHub Issue #14910 - Replace=true and immutable fields](https://github.com/argoproj/argo-cd/issues/14910)
 - [Handle immutable fields in Kubernetes with ArgoCD](https://medium.com/@paolocarta_it/handle-immutable-fields-in-kubernetes-with-argocd-0910253d566e)
 - [ArgoCD Self-Management Guide](https://www.teracloud.io/single-post/self-managed-argocd-wait-argocd-can-manage-itself)
+- [ArgoCD Official Documentation](https://argo-cd.readthedocs.io/)
+
+---
+
+## Summary
+
+This guide describes the **future state** transition from manual ArgoCD installation to GitOps self-management. The transition involves:
+
+1. Using `Force=true` sync option to handle immutable field conflicts
+2. Deleting and recreating Deployments with new selectors
+3. Preserving secrets to maintain authentication
+4. Verifying successful recreation and service endpoints
+
+**Current Recommendation:** Keep ArgoCD as a manual installation until infrastructure components are stable. When ready to transition, follow this guide carefully and expect 1-3 minutes of ArgoCD UI downtime during the migration.

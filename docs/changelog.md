@@ -8,14 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- ArgoCD self-management application
-  - Helm-based deployment using official argo-cd chart (v7.7.14)
-  - Base configuration with resource limits for homelab environments
-  - Portcullis cluster overlay with domain-specific settings
-  - Ingress enabled with Traefik integration
-  - Sync wave 5 for early deployment before other infrastructure
-  - ignoreDifferences for webhook CA bundles and auto-generated secrets
-  - ArgoCD now manages its own configuration through Git
+- **cert-manager** (sync-wave 20)
+  - Helm-based deployment using OCI chart from Quay (v1.19.2)
+  - Multi-source pattern with Git-based values files
+  - Base configuration enables CRDs only for minimal footprint
+  - Cluster overlay for portcullis-specific settings
+  - Essential for TLS certificate management across infrastructure
+- **cert-manager-resources** (sync-wave 75)
+  - Kustomize-based deployment of certificate management resources
+  - Self-signed ClusterIssuer for internal certificate generation
+  - Deployed after cert-manager to ensure CRDs are available
+  - Provides foundation for internal PKI
+- **argocd-ingress** (sync-wave 80)
+  - Kustomize-based Traefik IngressRoute for ArgoCD UI access
+  - Certificate resource for TLS (argocd.portcullis.osow.ski)
+  - ServersTransport for internal HTTPS communication with ArgoCD
+  - Base manifests use placeholder patterns (CLUSTER_NAME.DOMAIN)
+  - Cluster overlays patch with specific hostnames
+  - Enables secure external access to ArgoCD without port-forwarding
+- **kube-prometheus-stack-crds** (sync-wave 2)
+  - Standalone Helm deployment for Prometheus Operator CRDs
+  - Deployed very early (wave 2) to ensure CRDs available before other components
+  - Decoupled from main kube-prometheus-stack deployment (wave 20)
+  - Helm values configured to enable only CRDs, disabling all other components
+  - Addresses CRD timing issues with ServiceMonitor and PrometheusRule resources
 - Comprehensive Helm deployment guide (`docs/adding-helm-workloads.md`)
   - Detailed walkthroughs for infrastructure and workload applications
   - Real-world examples with cert-manager and Grafana
@@ -31,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Complete monitoring stack with Prometheus, Grafana, Alertmanager
   - Base values with conservative resource limits
   - Portcullis cluster overlay with ingress configuration
-  - ServiceMonitor and PrometheusRule CRDs enabled
+  - ServiceMonitor and PrometheusRule CRDs enabled (via separate kps-crds app)
   - Persistent storage for Prometheus, Grafana, and Alertmanager
 - **Sync wave annotations** for deployment ordering
   - Bootstrap: wave 0
@@ -44,6 +60,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Parent Applications monitor these files for discovery
 
 ### Changed
+- **ArgoCD self-management deferred to future state**
+  - ArgoCD remains as manual installation for now (not self-managed via GitOps)
+  - Self-management documentation consolidated for future reference
+  - Decision allows focus on infrastructure components first
+  - ArgoCD access now provided via argocd-ingress Application (Traefik IngressRoute)
+  - See `docs/argocd-self-management.md` for future migration guidance
 - **BREAKING: Bootstrap pattern restructured**
   - Moved from `bootstrap/values-<cluster>.yaml` to `clusters/<cluster>/bootstrap.yaml`
   - Bootstrap now uses inline `valuesObject` for cluster configuration

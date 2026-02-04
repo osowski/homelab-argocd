@@ -197,14 +197,16 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 Login with username `admin` and the password from above.
 
-### Create Ingress (Production)
+### Ingress Access (Production)
 
-> **Note**: With ArgoCD self-management enabled, ingress is automatically configured through the ArgoCD Application manifest. See `infrastructure/argocd/base/values.yaml` for ingress configuration and `infrastructure/argocd/overlays/<cluster>/values.yaml` for cluster-specific hostnames.
-
-The self-managed ArgoCD Application includes ingress configuration:
-- Ingress enabled with Traefik integration
+ArgoCD UI access is provided via the **argocd-ingress** Application:
+- Traefik IngressRoute deployed via Kustomize (sync-wave 80)
 - Hostname: `argocd.<cluster>.<domain>` (e.g., `argocd.portcullis.osow.ski`)
-- TLS enabled (certificates managed externally or by cert-manager)
+- TLS certificates managed by cert-manager
+- ServersTransport configured for internal HTTPS communication
+- See `infrastructure/argocd-ingress/` for configuration details
+
+Once the argocd-ingress Application is synced, access ArgoCD at the configured hostname (e.g., https://argocd.portcullis.osow.ski).
 
 ## Troubleshooting
 
