@@ -1,0 +1,13 @@
+TODO:
+- https://github.com/hitchai-app/gitops/commit/fa61e3e2996ff90afa04676536485d1f05d21430
+
+```yaml
+  # Custom health checks
+  # Traefik doesn't populate status.loadBalancer.ingress, causing ArgoCD to
+  # report Ingress as Progressing forever. Override to always report Healthy.
+  # https://github.com/argoproj/argo-cd/issues/14607
+  resource.customizations.health.networking.k8s.io_Ingress: |
+    hs = {}
+    hs.status = "Healthy"
+    return hs
+```
