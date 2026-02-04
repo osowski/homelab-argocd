@@ -56,33 +56,87 @@ mkdir -p clusters/<cluster-name>/infrastructure
 mkdir -p clusters/<cluster-name>/workloads
 ```
 
-Create a `.gitkeep` file to preserve empty directories:
+Create kustomization files for each layer:
 
-```bash
-touch clusters/<cluster-name>/infrastructure/.gitkeep
-touch clusters/<cluster-name>/workloads/.gitkeep
+**`clusters/<cluster-name>/infrastructure/kustomization.yaml`**
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources: []
+# Add infrastructure applications here as they are created
+# Example:
+# - traefik.yaml
+# - kube-prometheus-stack.yaml
 ```
 
-## Step 3: Create Cluster-Specific Values
-
-Create a values file for the cluster:
-
-**`bootstrap/values-<cluster-name>.yaml`**
+**`clusters/<cluster-name>/workloads/kustomization.yaml`**
 ```yaml
-cluster:
-  name: "<cluster-name>"
-  domain: "osow.ski"
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources: []
+# Add workload applications here as they are created
+# Example:
+# - http-echo.yaml
+```
+
+## Step 3: Create Bootstrap Application
+
+Create a bootstrap Application manifest for the cluster:
+
+**`clusters/<cluster-name>/bootstrap.yaml`**
+```yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bootstrap
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osowski/homelab-argocd.git
+    targetRevision: HEAD
+    path: bootstrap
+    helm:
+      valuesObject:
+        cluster:
+          name: <cluster-name>
+          domain: osow.ski
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
 ```
 
 Adjust the domain if different for this cluster.
 
-## Step 4: Test Bootstrap Rendering
+## Step 4: Validate Bootstrap Configuration
 
-Validate the bootstrap configuration:
+Validate the bootstrap Application manifest:
+
+```bash
+kubectl apply --dry-run=client -f clusters/<cluster-name>/bootstrap.yaml
+```
+
+Expected output: `application.argoproj.io/bootstrap created (dry run)`
+
+Optionally, validate what the bootstrap chart will create:
 
 ```bash
 helm template bootstrap ./bootstrap/ \
-  --values ./bootstrap/values-<cluster-name>.yaml
+  --set cluster.name=<cluster-name> \
+  --set cluster.domain=osow.ski
 ```
 
 Review the output:
@@ -95,7 +149,6 @@ Review the output:
 Commit the new cluster configuration:
 
 ```bash
-git add bootstrap/values-<cluster-name>.yaml
 git add clusters/<cluster-name>/
 git commit -m "Add <cluster-name> cluster configuration"
 git push
@@ -103,110 +156,39 @@ git push
 
 ## Step 6: Deploy Bootstrap to Cluster
 
-Deploy the bootstrap to the new cluster:
+Deploy the bootstrap Application to the new cluster:
 
 ```bash
-helm template bootstrap ./bootstrap/ \
-  --values ./bootstrap/values-<cluster-name>.yaml \
-  | kubectl apply -f -
+kubectl apply -f clusters/<cluster-name>/bootstrap.yaml
 ```
 
-Verify the bootstrap was created:
+The bootstrap Application will create ArgoCD Projects and parent Applications.
+
+**For detailed bootstrap procedures, troubleshooting, and verification steps, see [Bootstrap Procedure](bootstrap-procedure.md).**
+
+Quick verification:
 
 ```bash
 kubectl get applications -n argocd
 ```
 
-Expected output:
-```
-NAME                  SYNC STATUS   HEALTH STATUS
-infrastructure-apps   Synced        Healthy
-workloads-apps        Synced        Healthy
-```
+Expected output shows bootstrap, infrastructure, and workloads Applications all Synced and Healthy.
 
 ## Step 7: Add Applications to Cluster
 
-> TODO This Step should simply be a link to `adding-applications.md` file instead of duplicating content. It should contain a link for Helm applications and for manifest-based applications separately.
+Once the cluster is bootstrapped, you can add applications. See the detailed guides:
 
-Add applications by creating ArgoCD Application manifests in the cluster directories.
+- **[Adding Applications](adding-applications.md)** - Complete guide for adding both Kustomize and Helm applications
+  - Kustomize applications: Simple workloads with manifest-based configuration
+  - Helm applications: Infrastructure components with upstream charts
+  - Includes sync wave guidelines, testing procedures, and best practices
 
-### Example: Add http-echo workload
-
-**`clusters/<cluster-name>/workloads/http-echo.yaml`**
-```yaml
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: http-echo
-  namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
-spec:
-  project: workloads
-  source:
-    repoURL: https://github.com/osowski/homelab-argocd.git
-    targetRevision: HEAD
-    path: workloads/http-echo/overlays/<cluster-name>
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: http-echo
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-```
-
-### Create Overlay for the Application
-
-**`workloads/http-echo/overlays/<cluster-name>/kustomization.yaml`**
-```yaml
----
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - ../../base
-
-patches:
-  - path: ingress-patch.yaml
-    target:
-      kind: Ingress
-      name: http-echo
-```
-
-**`workloads/http-echo/overlays/<cluster-name>/ingress-patch.yaml`**
-```yaml
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: http-echo
-  namespace: http-echo
-spec:
-  rules:
-    - host: echo.<cluster-name>.osow.ski
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: http-echo
-                port:
-                  name: http
-```
-
-Commit and push:
-
-```bash
-git add workloads/http-echo/overlays/<cluster-name>/
-git add clusters/<cluster-name>/workloads/http-echo.yaml
-git commit -m "Add http-echo to <cluster-name> cluster"
-git push
-```
+**Quick reference:**
+1. Create application manifests (base + overlay) in `workloads/<app>/` or `infrastructure/<app>/`
+2. Create ArgoCD Application CRD in `clusters/<cluster-name>/workloads/<app>.yaml` or `clusters/<cluster-name>/infrastructure/<app>.yaml`
+3. Add application to `clusters/<cluster-name>/workloads/kustomization.yaml` or `clusters/<cluster-name>/infrastructure/kustomization.yaml`
+4. Commit and push to Git
+5. ArgoCD automatically discovers and deploys the application
 
 ## Step 8: Configure DNS and Ingress
 
@@ -319,11 +301,16 @@ kubectl get applications -n argocd -w
 
 ### Step 3: Remove Bootstrap
 
-Delete parent Applications:
+Delete the bootstrap Application (will cascade to parent and child Applications):
 
 ```bash
-kubectl delete application infrastructure-apps -n argocd
-kubectl delete application workloads-apps -n argocd
+kubectl delete application bootstrap -n argocd
+```
+
+Wait for all Applications to be removed:
+
+```bash
+kubectl get applications -n argocd -w
 ```
 
 ### Step 4: Uninstall ArgoCD (Optional)
@@ -334,12 +321,11 @@ kubectl delete namespace argocd
 
 ### Step 5: Clean Up Repository
 
-Remove cluster-specific files:
+The cluster directory was already removed in Step 1. Verify no orphaned files remain:
 
 ```bash
-rm bootstrap/values-<cluster-name>.yaml
-git commit -m "Remove <cluster-name> bootstrap configuration"
-git push
+ls -la clusters/<cluster-name>/  # Should not exist
+git status  # Should show clean working tree
 ```
 
 ## Troubleshooting
@@ -423,6 +409,9 @@ git push
 
 ## Next Steps
 
-- Add applications: [Adding Applications](adding-applications.md)
-- Review architecture: [Architecture](architecture.md)
-- Bootstrap procedure: [Bootstrap Procedure](bootstrap-procedure.md)
+After cluster onboarding:
+
+- **Add applications**: [Adding Applications](adding-applications.md) - Add workloads and infrastructure components
+- **Bootstrap operations**: [Bootstrap Procedure](bootstrap-procedure.md) - Re-bootstrap, upgrade, or troubleshoot
+- **System architecture**: [Architecture](architecture.md) - Understand the overall design
+- **Advanced Helm patterns**: [Adding Helm Workloads](adding-helm-workloads.md) - Complex infrastructure deployments

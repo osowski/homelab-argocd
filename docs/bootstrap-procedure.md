@@ -1,8 +1,8 @@
 # Bootstrap Procedure
 
-This document describes the detailed procedure for bootstrapping ArgoCD on a new or existing Kubernetes cluster.
+This document describes the procedure for deploying the bootstrap Application to a cluster that already has ArgoCD installed.
 
-> TODO The majority of this doc is duplicative of `cluster-onboarding.md`. This should be folded into `cluster-onboarding.md` instead.
+**For complete cluster onboarding** (including ArgoCD installation and cluster setup), see [Cluster Onboarding](cluster-onboarding.md).
 
 ## Prerequisites
 
@@ -36,54 +36,101 @@ cd homelab-argocd
 
 ## Bootstrap Steps
 
-### Step 1: Prepare Cluster-Specific Values
+### Step 1: Prepare Cluster Bootstrap Application
 
-For a new cluster, create a values file:
+For a new cluster, create a bootstrap Application manifest:
 
-**`bootstrap/values-<cluster-name>.yaml`**
+**`clusters/<cluster-name>/bootstrap.yaml`**
 ```yaml
-cluster:
-  name: "<cluster-name>"
-  domain: "osow.ski"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bootstrap
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osowski/homelab-argocd.git
+    targetRevision: HEAD
+    path: bootstrap
+    helm:
+      valuesObject:
+        cluster:
+          name: <cluster-name>
+          domain: osow.ski
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
 ```
 
-### Step 2: Validate Bootstrap Chart
+The `valuesObject` provides cluster-specific configuration inline, eliminating the need for separate values files.
 
-Test the Helm template rendering:
+### Step 2: Validate Bootstrap Application
+
+Test the Application manifest is valid:
+
+```bash
+kubectl apply --dry-run=client -f clusters/<cluster-name>/bootstrap.yaml
+```
+
+Expected output: `application.argoproj.io/bootstrap created (dry run)`
+
+Optionally, validate what the bootstrap chart will create:
 
 ```bash
 helm template bootstrap ./bootstrap/ \
-  --values ./bootstrap/values-<cluster-name>.yaml
+  --set cluster.name=<cluster-name> \
+  --set cluster.domain=osow.ski
 ```
 
 Review the output for correctness:
 - ArgoCD Projects created (infrastructure, workloads)
-- Parent Applications created (infrastructure-apps, workloads-apps)
+- Parent Applications created (infrastructure, workloads)
 - Correct cluster name and repository URL
-
-> TODO This needs to be updated in the future to have ArgoCD manage the ArgoProjects long-term.
 
 ### Step 3: Apply Bootstrap
 
-Deploy the bootstrap chart:
+Deploy the bootstrap Application:
 
 ```bash
-helm template bootstrap ./bootstrap/ \
-  --values ./bootstrap/values-<cluster-name>.yaml \
-  | kubectl apply -f -
+kubectl apply -f clusters/<cluster-name>/bootstrap.yaml
 ```
 
 Expected output:
 ```
-appproject.argoproj.io/infrastructure created
-appproject.argoproj.io/workloads created
-application.argoproj.io/infrastructure-apps created
-application.argoproj.io/workloads-apps created
+application.argoproj.io/bootstrap created
 ```
 
-### Step 4: Verify Parent Applications
+The bootstrap Application will then create:
+- ArgoCD Projects (infrastructure, workloads)
+- Parent Applications (infrastructure, workloads)
 
-Check that parent Applications are created:
+### Step 4: Verify Bootstrap Application
+
+First, check that the bootstrap Application synced:
+
+```bash
+kubectl get application bootstrap -n argocd
+```
+
+Expected output:
+```
+NAME        SYNC STATUS   HEALTH STATUS
+bootstrap   Synced        Healthy
+```
+
+Then verify parent Applications were created:
 
 ```bash
 kubectl get applications -n argocd
@@ -91,9 +138,10 @@ kubectl get applications -n argocd
 
 Expected output:
 ```
-NAME                  SYNC STATUS   HEALTH STATUS
-infrastructure-apps   Synced        Healthy
-workloads-apps        Synced        Healthy
+NAME             SYNC STATUS   HEALTH STATUS
+bootstrap        Synced        Healthy
+infrastructure   Synced        Healthy
+workloads        Synced        Healthy
 ```
 
 ### Step 5: Wait for Child Applications
@@ -183,12 +231,12 @@ The self-managed ArgoCD Application includes ingress configuration:
 
 ### Parent Applications Not Syncing
 
-**Symptom**: `infrastructure-apps` or `workloads-apps` shows `OutOfSync`
+**Symptom**: `infrastructure` or `workloads` shows `OutOfSync`
 
 **Solutions**:
 1. Check repository access:
    ```bash
-   kubectl describe application infrastructure-apps -n argocd
+   kubectl describe application infrastructure -n argocd
    ```
 
 2. Verify path exists in repository:
@@ -197,9 +245,15 @@ The self-managed ArgoCD Application includes ingress configuration:
    ls -la clusters/<cluster-name>/workloads/
    ```
 
-3. Manually sync from CLI:
+3. Verify kustomization.yaml files exist:
    ```bash
-   kubectl patch application infrastructure-apps -n argocd \
+   cat clusters/<cluster-name>/infrastructure/kustomization.yaml
+   cat clusters/<cluster-name>/workloads/kustomization.yaml
+   ```
+
+4. Manually sync from CLI:
+   ```bash
+   kubectl patch application infrastructure -n argocd \
      --type merge -p '{"operation":{"sync":{}}}'
    ```
 
@@ -219,12 +273,16 @@ The self-managed ArgoCD Application includes ingress configuration:
      | grep infrastructure-apps
    ```
 
-3. Force parent Application to refresh:
+3. Verify the application is listed in kustomization.yaml:
    ```bash
-   kubectl delete application infrastructure-apps -n argocd
-   helm template bootstrap ./bootstrap/ \
-     --values ./bootstrap/values-<cluster-name>.yaml \
-     | kubectl apply -f -
+   grep <app>.yaml clusters/<cluster>/infrastructure/kustomization.yaml
+   ```
+
+4. Force parent Application to refresh:
+   ```bash
+   kubectl delete application infrastructure -n argocd
+   # Wait for bootstrap to recreate it
+   kubectl get application infrastructure -n argocd -w
    ```
 
 ### Application Stuck in Progressing
@@ -273,48 +331,49 @@ The self-managed ArgoCD Application includes ingress configuration:
 To re-apply the bootstrap (safe, idempotent):
 
 ```bash
-helm template bootstrap ./bootstrap/ \
-  --values ./bootstrap/values-<cluster-name>.yaml \
-  | kubectl apply -f -
+kubectl apply -f clusters/<cluster-name>/bootstrap.yaml
 ```
 
-This is safe to run multiple times. Existing Applications will be updated, not recreated.
+This is safe to run multiple times. The bootstrap Application will update its managed resources (Projects and parent Applications) if changes are detected.
 
 ## Removing Bootstrap
 
 To remove all ArgoCD Applications (WARNING: destructive):
 
 ```bash
-# Delete parent Applications (will cascade to children)
-kubectl delete application infrastructure-apps -n argocd
-kubectl delete application workloads-apps -n argocd
+# Delete bootstrap Application (will cascade to everything)
+kubectl delete application bootstrap -n argocd
 
-# Delete Projects
+# If needed, manually delete Projects
 kubectl delete appproject infrastructure -n argocd
 kubectl delete appproject workloads -n argocd
 ```
 
-**Note**: This removes ArgoCD Applications but does NOT remove the deployed workloads. To remove workloads, delete them before removing Applications, or set `prune: true` in sync policy.
+**Note**: Deleting the bootstrap Application will delete parent Applications, which will cascade to child Applications. Due to the finalizers, ArgoCD will clean up managed resources. This process may take several minutes.
 
 ## Upgrading Bootstrap
 
-To update the bootstrap chart:
+To update the bootstrap configuration:
 
-1. Make changes to `bootstrap/` files
+### Option 1: Update Bootstrap Application (cluster-specific changes)
+
+1. Edit `clusters/<cluster-name>/bootstrap.yaml`
+2. Commit and push to Git
+3. ArgoCD will automatically sync the changes
+
+### Option 2: Update Bootstrap Helm Chart (affects all clusters)
+
+1. Make changes to `bootstrap/` files (templates, values.yaml)
 2. Test locally:
    ```bash
    helm template bootstrap ./bootstrap/ \
-     --values ./bootstrap/values-<cluster-name>.yaml
+     --set cluster.name=<cluster-name> \
+     --set cluster.domain=osow.ski
    ```
 
-3. Apply changes:
-   ```bash
-   helm template bootstrap ./bootstrap/ \
-     --values ./bootstrap/values-<cluster-name>.yaml \
-     | kubectl apply -f -
-   ```
-
-4. Verify Applications updated:
+3. Commit and push to Git
+4. The bootstrap Application will automatically detect and apply changes
+5. Verify Applications updated:
    ```bash
    kubectl get applications -n argocd
    ```
@@ -351,6 +410,9 @@ After successful bootstrap:
 
 ## Next Steps
 
-- Add new applications: [Adding Applications](adding-applications.md)
-- Onboard new clusters: [Cluster Onboarding](cluster-onboarding.md)
-- Understand architecture: [Architecture](architecture.md)
+After successful bootstrap:
+
+- **Add applications to the cluster**: [Adding Applications](adding-applications.md)
+- **Set up additional clusters**: [Cluster Onboarding](cluster-onboarding.md)
+- **Review system architecture**: [Architecture](architecture.md)
+- **Learn advanced Helm patterns**: [Adding Helm Workloads](adding-helm-workloads.md)

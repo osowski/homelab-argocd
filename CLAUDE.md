@@ -44,6 +44,26 @@ Refer to these documentation files for details. Claude may read them as needed:
 - [Code Review Checklist](./docs/code_review_checklist.md) - **MANDATORY checklist before creating PRs**
 - [Architecture Decision Records](./adrs/) - Sub-directory containing all architecture decision records
 
+### Documentation Maintenance Principles
+
+**Avoid Duplication - Use Cross-References:**
+- Each piece of information should live in ONE authoritative location
+- When related information exists in multiple docs, use cross-references instead of duplicating content
+- Link to the canonical source with clear context about what the reader will find
+- Example: "For detailed bootstrap procedures, see [Bootstrap Procedure](bootstrap-procedure.md)"
+
+**Clear Document Boundaries:**
+- **adding-applications.md** - How to add individual applications to existing clusters
+- **bootstrap-procedure.md** - Bootstrap deployment and operations on existing ArgoCD installations
+- **cluster-onboarding.md** - Complete new cluster setup (references the above for specific steps)
+- **architecture.md** - System design and patterns (canonical source for architectural decisions)
+
+**When Updating Documentation:**
+1. Identify the canonical location for each piece of information
+2. Remove duplicate content from other files
+3. Replace duplicates with cross-references to the canonical source
+4. Ensure "Next Steps" sections provide clear navigation between related docs
+
 ## Constraints and Policies
 
 These rules apply *in every session*:

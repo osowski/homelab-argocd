@@ -1,9 +1,15 @@
 # Adding Applications
 
-This guide walks through adding a new application to the GitOps repository.
+This guide walks through adding a new application to an existing cluster in the GitOps repository.
+
+**Related guides:**
+- **[Cluster Onboarding](cluster-onboarding.md)** - Setting up a new cluster from scratch
+- **[Bootstrap Procedure](bootstrap-procedure.md)** - Deploying bootstrap to an existing cluster
+- **[Adding Helm Workloads](adding-helm-workloads.md)** - Comprehensive Helm deployment guide with advanced patterns
 
 ## Prerequisites
 
+- Cluster already onboarded with bootstrap deployed
 - Basic knowledge of Kubernetes manifests
 - Familiarity with Kustomize or Helm
 - Access to this Git repository
@@ -195,6 +201,8 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "105"  # Deploy after infrastructure
 spec:
   project: workloads
   source:
@@ -212,15 +220,29 @@ spec:
       - CreateNamespace=true
 ```
 
-### Step 4: Commit and Push
+### Step 4: Add to Cluster Kustomization
+
+Add the application to the cluster's kustomization file:
+
+**`clusters/<cluster-name>/workloads/kustomization.yaml`**
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - <app-name>.yaml
+  # ... other applications
+```
+
+### Step 5: Commit and Push
 
 ```bash
-git add workloads/<app-name>/ clusters/<cluster-name>/workloads/<app-name>.yaml
+git add workloads/<app-name>/ clusters/<cluster-name>/workloads/<app-name>.yaml clusters/<cluster-name>/workloads/kustomization.yaml
 git commit -m "Add <app-name> application"
 git push
 ```
 
-### Step 5: Verify Deployment
+### Step 6: Verify Deployment
 
 ```bash
 # Check ArgoCD Application created
@@ -280,16 +302,22 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"  # Adjust based on dependencies
 spec:
   project: infrastructure
-  source:
-    repoURL: <upstream-helm-repo-url>
+  sources:
+  - repoURL: <upstream-helm-repo-url>
     targetRevision: <chart-version>
     chart: <chart-name>
     helm:
+      ignoreMissingValueFiles: true  # Optional: allows missing overlay files
       valueFiles:
-        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/<app-name>/base/values.yaml
-        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/<app-name>/overlays/<cluster-name>/values.yaml
+        - $values/infrastructure/<app-name>/base/values.yaml
+        - $values/infrastructure/<app-name>/overlays/<cluster-name>/values.yaml
+  - repoURL: https://github.com/osowski/homelab-argocd
+    targetRevision: HEAD
+    ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: <namespace>
@@ -299,17 +327,73 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true  # Required for CRDs
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
 ```
 
-**Note**: For Helm charts, ArgoCD can pull values files from this repo using raw GitHub URLs.
+**Note**: This uses ArgoCD's multi-source feature:
+- First source: upstream Helm chart
+- Second source: values files from this Git repository
+- The `$values` reference points to the Git repo source
+- `ignoreMissingValueFiles` allows deployment without overlay file (uses only base values)
 
-### Step 5: Commit and Push
+### Step 5: Add to Cluster Kustomization
+
+Add the application to the cluster's infrastructure kustomization file:
+
+**`clusters/<cluster-name>/infrastructure/kustomization.yaml`**
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - <app-name>.yaml
+  # ... other infrastructure components
+```
+
+### Step 6: Commit and Push
 
 ```bash
-git add infrastructure/<app-name>/ clusters/<cluster-name>/infrastructure/<app-name>.yaml
+git add infrastructure/<app-name>/ clusters/<cluster-name>/infrastructure/<app-name>.yaml clusters/<cluster-name>/infrastructure/kustomization.yaml
 git commit -m "Add <app-name> infrastructure component"
 git push
 ```
+
+## Sync Waves
+
+Use sync waves to control deployment order when applications have dependencies.
+
+### Common Sync Wave Values
+
+| Wave | Purpose | Examples |
+|------|---------|----------|
+| 0 | Bootstrap | Bootstrap Application |
+| 1 | Parent Apps | infrastructure, workloads |
+| 10-50 | Core Infrastructure | traefik (10), kube-prometheus-stack (20), cert-manager (15) |
+| 100 | Workload Parent | workloads parent app |
+| 105+ | Applications | http-echo (105), custom apps (110+) |
+
+### Setting Sync Waves
+
+Add annotation to Application metadata:
+
+```yaml
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+```
+
+**Guidelines:**
+- Lower numbers deploy first
+- Leave gaps (10, 20, 30) for future insertions
+- Infrastructure: waves 10-50
+- Workloads: waves 105+
+- Critical dependencies (storage, networking) should have lower wave numbers
 
 ## Testing Changes Locally
 
@@ -427,6 +511,7 @@ Set conservative defaults in base, increase in overlay if needed.
 
 ## Next Steps
 
-- Review [Architecture](architecture.md) for system design
-- See [Bootstrap Procedure](bootstrap-procedure.md) for cluster setup
-- Explore [Cluster Onboarding](cluster-onboarding.md) for adding clusters
+- **Advanced Helm patterns**: [Adding Helm Workloads](adding-helm-workloads.md) - Comprehensive guide with real-world examples
+- **System architecture**: [Architecture](architecture.md) - Understand the overall design and patterns
+- **Bootstrap operations**: [Bootstrap Procedure](bootstrap-procedure.md) - Manage bootstrap configuration
+- **New cluster setup**: [Cluster Onboarding](cluster-onboarding.md) - Onboard additional clusters
