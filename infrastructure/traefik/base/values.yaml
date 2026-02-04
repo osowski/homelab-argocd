@@ -15,5 +15,11 @@ tolerations:
     operator: Equal
     effect: NoSchedule
 
+providers:
+  kubernetesIngress:
+    publishedService:
+      enabled: true
+      pathOverride: "monitoring/traefik"  # namespace/service-name
+
 ## NOTES:
 ## NodePort is required for use in kind clusters
