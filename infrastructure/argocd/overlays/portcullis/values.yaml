@@ -6,6 +6,11 @@ global:
 server:
   config:
     url: https://argocd.portcullis.osow.ski
+    
+    resource.customizations.health.networking.k8s.io_Ingress: |
+      hs = {}
+      hs.status = "Healthy"
+      return hs
 
   ingress:
     enabled: true
