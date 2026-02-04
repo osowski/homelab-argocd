@@ -53,3 +53,9 @@ spec:
       name: alertmanager-kube-prometheus-stack-alertmanager
       jsonPointers:
         - /data
+    # Ignore Ingress loadBalancer status for NodePort environments (KIND clusters)
+    # NodePort services don't populate status.loadBalancer, causing ArgoCD to stay in Progressing
+    - group: networking.k8s.io
+      kind: Ingress
+      jsonPointers:
+        - /status/loadBalancer
