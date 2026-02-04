@@ -31,6 +31,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true  # Required for CRDs
+      - Replace=true  # Allow replacing resources with immutable field conflicts
     retry:
       limit: 5
       backoff:
