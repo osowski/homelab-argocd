@@ -6,17 +6,19 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
-  project: workloads
+  project: default
   source:
     repoURL: https://github.com/osowski/homelab-argocd.git
     targetRevision: HEAD
     path: bootstrap
-  helm:
-    valuesObject:
-      cluster:
-        name: portcullis
-        domain: osow.ski
+    helm:
+      valuesObject:
+        cluster:
+          name: portcullis
+          domain: osow.ski
   destination:
     server: https://kubernetes.default.svc
     namespace: http-echo

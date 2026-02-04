@@ -45,6 +45,12 @@ homelab-argocd/
 ### Prerequisites
 
 - Kubernetes cluster with ArgoCD installed
+  - https://argo-cd.readthedocs.io/en/stable/getting_started/#1-install-argo-cd
+```
+  ## TODO Revisit for version-specific install
+  kubectl create namespace argocd
+  kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
 - `kubectl` configured with cluster access
 - `helm` CLI installed
 
@@ -56,14 +62,14 @@ homelab-argocd/
    cd homelab-argocd
    ```
 
-2. Deploy the bootstrap application:
+2. Ensure repository credentials exist in Argo CD for this repository.
+
+3. Deploy the bootstrap application:
    ```bash
-   helm template bootstrap ./bootstrap/ \
-     --values ./bootstrap/values-<cluster-name>.yaml \
-     | kubectl apply -f -
+   kubectl apply -f ./clusters/<cluster-name>/bootstrap.yaml
    ```
 
-3. Watch ArgoCD sync the applications:
+4. Watch ArgoCD sync the applications:
    ```bash
    kubectl get applications -n argocd -w
    ```

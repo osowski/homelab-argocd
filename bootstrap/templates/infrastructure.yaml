@@ -6,6 +6,8 @@ metadata:
   namespace: {{ .Values.argocd.namespace }}
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: infrastructure
   source:
