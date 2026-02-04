@@ -70,15 +70,6 @@ grafana:
       cpu: 1000m
       memory: 1Gi
 
-  # Additional datasources for portcullis
-  additionalDataSources:
-    - name: Loki
-      type: loki
-      url: http://loki.monitoring.svc.cluster.local:3100
-      access: proxy
-      isDefault: false
-      editable: true
-
 # Prometheus configuration for portcullis
 prometheus:
   prometheusSpec:
