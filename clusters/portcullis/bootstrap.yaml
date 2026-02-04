@@ -21,7 +21,7 @@ spec:
           domain: osow.ski
   destination:
     server: https://kubernetes.default.svc
-    namespace: http-echo
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true
