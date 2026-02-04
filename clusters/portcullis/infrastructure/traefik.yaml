@@ -16,8 +16,8 @@ spec:
     chart: traefik
     helm:
       valueFiles:
-        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/base/values.yaml
-        - https://raw.githubusercontent.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/overlays/portcullis/values.yaml
+        - https://github.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/base/values.yaml
+        - https://github.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/overlays/portcullis/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -34,19 +34,4 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
-  ignoreDifferences:
-    # Ignore differences in webhook CA bundles (auto-generated)
-    - group: admissionregistration.k8s.io
-      kind: MutatingWebhookConfiguration
-      jsonPointers:
-        - /webhooks/0/clientConfig/caBundle
-    - group: admissionregistration.k8s.io
-      kind: ValidatingWebhookConfiguration
-      jsonPointers:
-        - /webhooks/0/clientConfig/caBundle
-    # Ignore differences in auto-generated secrets
-    - group: ""
-      kind: Secret
-      name: alertmanager-kube-prometheus-stack-alertmanager
-      jsonPointers:
-        - /data
+  ignoreDifferences: []
