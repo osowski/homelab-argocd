@@ -15,6 +15,7 @@ spec:
     targetRevision: 38.0.2  # Pin to specific version
     chart: traefik
     helm:
+      ignoreMissingValueFiles: true
       valueFiles:
         - https://github.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/base/values.yaml
         - https://github.com/osowski/homelab-argocd/HEAD/infrastructure/traefik/overlays/portcullis/values.yaml
