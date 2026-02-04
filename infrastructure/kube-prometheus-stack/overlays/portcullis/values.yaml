@@ -23,6 +23,9 @@ alertmanager:
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
       #cert-manager.io/cluster-issuer: letsencrypt-prod
+      # Skip ArgoCD health check for NodePort environments (KIND clusters)
+      # NodePort services don't populate Ingress status.loadBalancer
+      argocd.argoproj.io/ignore-healthcheck: "true"
     hosts:
       - alertmanager.portcullis.osow.ski
     paths:
@@ -52,6 +55,8 @@ grafana:
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
       #cert-manager.io/cluster-issuer: letsencrypt-prod
+      # Skip ArgoCD health check for NodePort environments (KIND clusters)
+      argocd.argoproj.io/ignore-healthcheck: "true"
     hosts:
       - grafana.portcullis.osow.ski
     path: /
@@ -115,6 +120,8 @@ prometheus:
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
       #cert-manager.io/cluster-issuer: letsencrypt-prod
+      # Skip ArgoCD health check for NodePort environments (KIND clusters)
+      argocd.argoproj.io/ignore-healthcheck: "true"
     hosts:
       - prometheus.portcullis.osow.ski
     paths:
