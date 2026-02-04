@@ -20,6 +20,9 @@ configs:
 
 # ArgoCD Server Configuration
 server:
+  # Add sync annotations to force recreation of Deployment with immutable selector
+  deploymentAnnotations:
+    argocd.argoproj.io/sync-options: "Force=true,Replace=true"
   # Enable ingress for ArgoCD UI
   ingress:
     enabled: true
@@ -53,6 +56,9 @@ server:
 
 # ArgoCD Application Controller Configuration
 controller:
+  # Add sync annotations to force recreation
+  deploymentAnnotations:
+    argocd.argoproj.io/sync-options: "Force=true,Replace=true"
   # Resource limits for the controller
   resources:
     limits:
@@ -64,6 +70,9 @@ controller:
 
 # ArgoCD Repo Server Configuration
 repoServer:
+  # Add sync annotations to force recreation
+  deploymentAnnotations:
+    argocd.argoproj.io/sync-options: "Force=true,Replace=true"
   # Resource limits for repo server
   resources:
     limits:
@@ -75,6 +84,9 @@ repoServer:
 
 # ArgoCD Redis Configuration
 redis:
+  # Add sync annotations to force recreation
+  deploymentAnnotations:
+    argocd.argoproj.io/sync-options: "Force=true,Replace=true"
   serviceAccount:
     create: true
     name: argocd-redis
@@ -98,6 +110,9 @@ redisSecretInit:
 # ArgoCD ApplicationSet Controller
 applicationSet:
   enabled: true
+  # Add sync annotations to force recreation
+  deploymentAnnotations:
+    argocd.argoproj.io/sync-options: "Force=true,Replace=true"
   resources:
     limits:
       cpu: 200m
