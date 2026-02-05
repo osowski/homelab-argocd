@@ -82,21 +82,19 @@ Only load task-specific docs when needed. This file is intentionally concise —
 
 ### Security - MUST FOLLOW
 
-All security rules are detailed in the [Code Review Checklist](./docs/code_review_checklist.md). Key principles:
+Security rules are detailed in the [Code Review Checklist](./docs/code_review_checklist.md) and [homelab-docs security guidelines](https://github.com/osowski/homelab-docs/blob/main/docs/guides/code-review-checklist.md). Key principles:
 
 - NEVER expose API keys or tokens
-- ALWAYS use environment variables for secrets
+- ALWAYS manage secrets externally (not committed to this repository)
 - NEVER commit `.env.local` or credential files
-- Validate and sanitize all user input
-- Use restrictive file permissions for scripts containing secrets
-- Securely delete temporary files containing credentials
+- NEVER store Kubernetes Secrets in plain text in manifests
 
 ### Code Quality
 
-- Apply defensive programming practices (see [Code Review Checklist](./docs/code_review_checklist.md)
-- Ensure idempotency - playbooks must be safe to re-run
-- Validate inputs and handle edge cases
-- Consider both enabled and disabled states for feature flags
+- Apply defensive programming practices (see [Code Review Checklist](./docs/code_review_checklist.md))
+- Ensure idempotency - manifests must be safe to re-apply
+- Validate YAML syntax and Kustomize/Helm rendering before committing
+- Verify sync wave ordering for deployment dependencies
 
 ### Dependencies
 

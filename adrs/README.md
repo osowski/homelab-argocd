@@ -2,50 +2,19 @@
 
 This directory contains Architecture Decision Records (ADRs) for the homelab-argocd project.
 
-## What are ADRs?
-
-An Architecture Decision Record (ADR) is a document that captures an important architectural decision made along with its context and consequences. ADRs help us:
-
-- **Document the "why"** behind architectural choices
-- **Preserve context** for future maintainers
-- **Facilitate discussion** about proposed changes
-- **Track evolution** of the system over time
-
-## ADR Format
-
-We follow the format from [adr.github.io](https://adr.github.io/), which includes:
-
-1. **Title and Number**: Sequential numbering with descriptive title
-2. **Date**: When the decision was made
-3. **Status**: Proposed, Accepted, Deprecated, or Superseded
-4. **Context**: What issue motivated this decision
-5. **Decision**: What we decided to do
-6. **Consequences**: What becomes easier or harder
-
-See [0000-template.md](0000-template.md) for the full template.
-
-## When to Create an ADR
-
-Create an ADR when making decisions that:
-
-- Impact system architecture or design patterns
-- Affect future feature implementation or refactoring
-- Choose between multiple viable technical approaches
-- Introduce new tools, frameworks, or dependencies
-- Change integration patterns or data flows
+> For ADR guidelines, format reference, and the canonical ADR template, see [homelab-docs ADRs](https://github.com/osowski/homelab-docs/blob/main/adrs/README.md). Cross-cutting ADRs that apply across multiple homelab repositories are also maintained there.
 
 ## Current ADRs
 
 | Number | Title | Status |
 |--------|-------|--------|
-| [0000](0000-template.md) | Template | - |
 | [0001](0001-app-of-apps-pattern.md) | Use ArgoCD App of Apps Pattern | Accepted |
 
 ## Creating a New ADR
 
-1. Copy the template:
+1. Copy the [canonical template from homelab-docs](https://github.com/osowski/homelab-docs/blob/main/adrs/0000-template.md):
    ```bash
-   cp adrs/0000-template.md adrs/NNNN-short-title.md
+   curl -o adrs/NNNN-short-title.md https://raw.githubusercontent.com/osowski/homelab-docs/main/adrs/0000-template.md
    ```
 
 2. Update the number (increment from the last ADR)
@@ -62,6 +31,6 @@ Create an ADR when making decisions that:
 
 ## References
 
+- [homelab-docs ADR Guidelines](https://github.com/osowski/homelab-docs/blob/main/adrs/README.md) - Canonical ADR format and guidelines
 - [Architecture Decision Records (adr.github.io)](https://adr.github.io/)
-- [ADR Tools and Examples](https://github.com/joelparkerhenderson/architecture-decision-record)
 - [CLAUDE.md - ADR Guidelines](../CLAUDE.md#universal-work-rules)

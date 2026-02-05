@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Documentation consolidation with homelab-docs** ([#27](https://github.com/osowski/homelab-argocd/issues/27))
+  - Rewrote `docs/code_review_checklist.md` to replace Ansible-specific content with ArgoCD/Kustomize/Helm-relevant checks
+  - Added cross-references to [homelab-docs](https://github.com/osowski/homelab-docs) for shared practices, ADR guidelines, and system architecture
+  - Updated `adrs/README.md` to reference canonical ADR template and cross-cutting ADRs in homelab-docs
+  - Replaced `adrs/0000-template.md` with pointer to canonical template in homelab-docs
+  - Added homelab-docs to Related Repositories in README.md
+  - Fixed homelab-ansible URL in README.md Related Repositories
+  - Updated CLAUDE.md to remove Ansible-specific language and align with ArgoCD codebase
+
 ### Added
 - **Confluent Platform with Confluent for Kubernetes (CFK) operator**
   - **confluent-operator** (sync-wave 105) - Helm-based CFK operator deployment

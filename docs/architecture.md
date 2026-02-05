@@ -1,5 +1,7 @@
 # Architecture
 
+> For the high-level homelab system architecture (networking, load balancing, cluster topology), see the [homelab-docs architecture overview](https://github.com/osowski/homelab-docs/blob/main/docs/architecture/overview.md).
+
 ## Overview
 
 This repository implements GitOps using ArgoCD's **App of Apps** pattern. The architecture separates infrastructure components from application workloads, with different RBAC policies for each.
