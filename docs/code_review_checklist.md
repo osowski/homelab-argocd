@@ -1,16 +1,10 @@
 # Code Review Checklist
 
-This checklist helps catch common issues during the planning and implementation phases. Review these items **before** creating a pull request.
+This checklist contains ArgoCD/GitOps-specific checks for the homelab-argocd repository. Review these items **before** creating a pull request.
 
-> For shared security practices and general development guidelines, see the [homelab-docs code review checklist](https://github.com/osowski/homelab-docs/blob/main/docs/guides/code-review-checklist.md).
+> **For shared security practices, code quality guidelines, Git workflow, and common development practices, see the [homelab-docs code review checklist](https://github.com/osowski/homelab-docs/blob/main/docs/guides/code-review-checklist.md).**
 
 ## Security
-
-### Secrets and Credentials
-- [ ] No secrets, API keys, or tokens are hardcoded in any files
-- [ ] All secrets are managed externally (not committed to this repository)
-- [ ] No `.env`, `.env.local`, or credential files are committed
-- [ ] Kubernetes Secrets are not stored in plain text in manifests
 
 ### Repository Access
 - [ ] ArgoCD repository credentials are configured securely
@@ -68,23 +62,7 @@ When implementing features, update these files in `/docs`:
 - [ ] ADRs follow the format from [homelab-docs ADR template](https://github.com/osowski/homelab-docs/blob/main/adrs/0000-template.md)
 - [ ] ADRs are referenced in relevant documentation files
 
-## Git and GitHub
-
-### Branch Naming
-- [ ] Branch follows format: `feature-<issue-id>/<description>` or `fix-<issue-id>/<description>`
-- [ ] Branch is associated with a GitHub Issue
-- [ ] Branch is NOT directly on `main`
-
-### Pull Request Description
-- [ ] Description accurately reflects what changed
-- [ ] Description explains **what** changed and **why**
-- [ ] Includes explicit markdown link to GitHub Issue: `[#123](https://github.com/osowski/homelab-argocd/issues/123)`
-- [ ] Not just "Closes #123" - use proper markdown link format
-
-### Commits
-- [ ] Commit messages clearly state intent and outcome
-- [ ] Commits are focused on single logical changes
-- [ ] No bleeding of multiple unrelated changes into one commit
+> **For Git workflow, branch naming, PR descriptions, and commit guidelines, see the [homelab-docs code review checklist](https://github.com/osowski/homelab-docs/blob/main/docs/guides/code-review-checklist.md#git-and-github).**
 
 ## Testing and Verification
 
