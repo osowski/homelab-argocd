@@ -19,13 +19,12 @@ Before doing work, Claude should follow this **standard workflow**:
 
 ### 2) Code with Verification
 - Implement minimal, necessary changes to solve the task.
-- Ensure changes have associated tests.
-- Run tests and validation checks locally or via CLI commands as specified in `/docs/testing.md`.
+- Validate manifests locally (see Testing and Verification section in [Code Review Checklist](./docs/code_review_checklist.md)).
 - **Apply security and defensive programming practices** from the checklist.
 
 ### 3) Pre-PR Review
 - **MANDATORY: Review [Code Review Checklist](./docs/code_review_checklist.md) before creating PR**
-- Verify all documentation in `/docs` has been updated (architecture.md, project_spec.md, changelog.md)
+- Verify all documentation in `/docs` has been updated (architecture.md, changelog.md, and relevant guides)
 - Ensure PR description is accurate and includes explicit GitHub issue link
 - Confirm branch naming follows `feature-<id>/` or `fix-<id>/` format
 
@@ -37,12 +36,12 @@ Before doing work, Claude should follow this **standard workflow**:
 
 Refer to these documentation files for details. Claude may read them as needed:
 
-- [Project Spec](./docs/project_spec.md) - Full requirements, scope, and technical details
-- [Architecture](./docs/architecture.md) - System design and data flow
-- [Changelog](./docs/changelog.md) - Version history
-   - TODO needs more detail/attention
+- [Architecture](./docs/architecture.md) - System design, GitOps patterns, and implementation details
+- [Changelog](./docs/changelog.md) - Version history and release notes
 - [Code Review Checklist](./docs/code_review_checklist.md) - **MANDATORY checklist before creating PRs**
 - [Architecture Decision Records](./adrs/) - Sub-directory containing all architecture decision records
+- [Adding Applications](./docs/adding-applications.md) - Step-by-step guide for adding new applications
+- [Bootstrap Procedure](./docs/bootstrap-procedure.md) - Initial cluster setup and troubleshooting
 
 ### Documentation Maintenance Principles
 
