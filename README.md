@@ -128,7 +128,8 @@ Navigate to https://localhost:8080 and login with username `admin` and the passw
 
 ## Related Repositories
 
-- [homelab-ansible](https://github.com/osowski/homelab-argocd) - Infrastructure provisioning and cluster lifecycle management
+- [homelab-docs](https://github.com/osowski/homelab-docs) - Shared homelab documentation, architecture overview, and cross-cutting ADRs
+- [homelab-ansible](https://github.com/osowski/homelab-ansible) - Infrastructure provisioning and cluster lifecycle management
 
 ## License
 
