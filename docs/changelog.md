@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **ArgoCD configuration management** via GitOps (#22)
+  - Infrastructure: `argocd-config` application patches ArgoCD ConfigMap
+  - Custom health check for Ingress resources (fixes forever "Progressing" status)
+  - Traefik on KIND doesn't populate `status.loadBalancer.ingress`, causing false "Progressing" reports
+  - Works with manually installed ArgoCD (pre-self-management)
+  - Extensible for future ArgoCD customizations (RBAC, SSO, notifications)
 - Control Center external access via Traefik IngressRoute with TLS support (#30)
   - Workload: `controlcenter-ingress` with base and cluster-specific overlays
   - Accessible at `controlcenter.{cluster}.osow.ski` for portcullis and artoo clusters
