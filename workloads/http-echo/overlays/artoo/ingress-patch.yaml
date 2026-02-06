@@ -1,0 +1,18 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-echo
+  namespace: http-echo
+spec:
+  rules:
+    - host: echo.artoo.osow.ski
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: http-echo
+                port:
+                  name: http

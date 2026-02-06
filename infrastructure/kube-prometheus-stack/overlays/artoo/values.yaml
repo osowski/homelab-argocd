@@ -1,0 +1,181 @@
+---
+# Artoo cluster-specific configuration for kube-prometheus-stack
+
+# Alertmanager configuration
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+
+    # External URL for artoo cluster
+    externalUrl: https://alertmanager.artoo.osow.ski
+
+  # Enable ingress for Alertmanager
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+      #cert-manager.io/cluster-issuer: letsencrypt-prod
+      # Skip ArgoCD health check for NodePort environments (KIND clusters)
+      # NodePort services don't populate Ingress status.loadBalancer
+      argocd.argoproj.io/ignore-healthcheck: "true"
+    hosts:
+      - alertmanager.artoo.osow.ski
+    paths:
+      - /
+    pathType: Prefix
+    tls:
+      - secretName: alertmanager-tls
+        hosts:
+          - alertmanager.artoo.osow.ski
+
+# Grafana configuration for artoo
+grafana:
+  # Override admin password (use sealed-secrets in production)
+  adminPassword: "artoo-admin-password"
+
+  # Persistence with Longhorn
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: standard
+    size: 5Gi
+
+  # Enable ingress for Grafana
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+      #cert-manager.io/cluster-issuer: letsencrypt-prod
+      # Skip ArgoCD health check for NodePort environments (KIND clusters)
+      argocd.argoproj.io/ignore-healthcheck: "true"
+    hosts:
+      - grafana.artoo.osow.ski
+    path: /
+    pathType: Prefix
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.artoo.osow.ski
+
+  # Increase resources for production workload
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# Prometheus configuration for artoo
+prometheus:
+  prometheusSpec:
+    # Use Longhorn for persistent storage
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi  # Increased for artoo
+
+    # External URL
+    externalUrl: https://prometheus.artoo.osow.ski
+
+    # Increase resources for production load
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+      limits:
+        cpu: 4000m
+        memory: 4Gi
+
+    # Increase retention for artoo
+    retention: 30d
+    retentionSize: "18GB"
+
+    # Additional scrape configs for homelab services
+    #additionalScrapeConfigs:
+    #  - job_name: 'homelab-nodes'
+    #    static_configs:
+    #      - targets:
+    #          # Add homelab node IPs here
+    #          # - 'node1.osow.ski:9100'
+    #          # - 'node2.osow.ski:9100'
+
+  # Enable ingress for Prometheus
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+      #cert-manager.io/cluster-issuer: letsencrypt-prod
+      # Skip ArgoCD health check for NodePort environments (KIND clusters)
+      argocd.argoproj.io/ignore-healthcheck: "true"
+    hosts:
+      - prometheus.artoo.osow.ski
+    paths:
+      - /
+    pathType: Prefix
+    tls:
+      - secretName: prometheus-tls
+        hosts:
+          - prometheus.artoo.osow.ski
+
+# Node Exporter configuration
+# Deploy on all nodes for comprehensive metrics
+nodeExporter:
+  enabled: true
+
+# Additional alert rules for artoo
+additionalPrometheusRulesMap:
+  homelab-alerts:
+    groups:
+      - name: homelab
+        interval: 30s
+        rules:
+          - alert: HostHighCpuLoad
+            expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Host high CPU load (instance {{ $labels.instance }})"
+              description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+          - alert: HostOutOfMemory
+            expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Host out of memory (instance {{ $labels.instance }})"
+              description: "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+          - alert: HostDiskWillFillIn24Hours
+            expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs"}[1h], 24 * 3600) < 0
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Host disk will fill in 24 hours (instance {{ $labels.instance }})"
+              description: "Filesystem is predicted to run out of space within the next 24 hours\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+          - alert: PodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Pod is crash looping (namespace {{ $labels.namespace }}, pod {{ $labels.pod }})"
+              description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting frequently\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

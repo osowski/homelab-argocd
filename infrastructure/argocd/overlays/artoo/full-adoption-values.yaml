@@ -1,0 +1,18 @@
+# ArgoCD Overlay Configuration for Artoo Cluster
+
+global:
+  domain: argocd.artoo.osow.ski
+
+server:
+  config:
+    url: https://argocd.artoo.osow.ski
+
+    resource.customizations.health.networking.k8s.io_Ingress: |
+      hs = {}
+      hs.status = "Healthy"
+      return hs
+
+  ingress:
+    enabled: true
+    hosts:
+      - argocd.artoo.osow.ski
