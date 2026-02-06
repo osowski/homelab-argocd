@@ -60,6 +60,8 @@ spec:
       kind: CustomResourceDefinition
     - group: admissionregistration.k8s.io
       kind: ValidatingWebhookConfiguration
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
     - group: rbac.authorization.k8s.io
       kind: ClusterRole
     - group: rbac.authorization.k8s.io
@@ -117,6 +119,8 @@ spec:
       kind: ControlCenter
     - group: cert-manager.io
       kind: Certificate
+    - group: cert-manager.io
+      kind: Issuer
     - group: traefik.io
       kind: IngressRoute
     - group: flink.apache.org
