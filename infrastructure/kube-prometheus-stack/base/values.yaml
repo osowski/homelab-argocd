@@ -75,16 +75,8 @@ grafana:
   ingress:
     enabled: false
 
-  # Default datasources (Prometheus)
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          type: prometheus
-          url: http://kube-prometheus-stack-prometheus:9090
-          access: proxy
-          isDefault: true
+  # Datasources configured by chart defaults (prometheus.datasources.defaultDatasourceEnabled: true)
+  # No need to override - chart creates Prometheus datasource automatically
 
   # Dashboard providers
   dashboardProviders:
