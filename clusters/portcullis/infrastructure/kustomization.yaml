@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
 #- argocd.yaml ## TODO needs more investigation for seamless, automated self-management
+- argocd-config.yaml
 - argocd-ingress.yaml
 - cert-manager.yaml
 - cert-manager-resources.yaml
