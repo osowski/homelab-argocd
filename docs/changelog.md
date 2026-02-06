@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Control Center external access via Traefik IngressRoute with TLS support (#30)
-  - Infrastructure: `controlcenter-ingress` with base and cluster-specific overlays
+  - Workload: `controlcenter-ingress` with base and cluster-specific overlays
   - Accessible at `controlcenter.{cluster}.osow.ski` for portcullis and artoo clusters
   - Self-signed TLS certificates via cert-manager
+  - Deployed in workloads project alongside confluent-resources
 
 ### Changed
 - **Documentation consolidation with homelab-docs** ([#27](https://github.com/osowski/homelab-argocd/issues/27))
