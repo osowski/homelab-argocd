@@ -1,12 +1,7 @@
 # Flink Kubernetes Operator - Portcullis Cluster Overlay
 # Cluster-specific configuration overrides
 
-# Enable debug logging for initial deployment
-# Can be disabled after validation
-operatorConfiguration:
-  log:
-    level: INFO
-
-# Additional pod labels for portcullis
-podLabels:
-  cluster: portcullis
+# Additional pod labels for portcullis cluster
+operatorPod:
+  labels:
+    cluster: portcullis
