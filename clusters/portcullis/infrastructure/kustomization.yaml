@@ -6,6 +6,7 @@ resources:
 - argocd-ingress.yaml
 - cert-manager.yaml
 - cert-manager-resources.yaml
+- controlcenter-ingress.yaml
 - kube-prometheus-stack-crds.yaml
 - kube-prometheus-stack.yaml
 - traefik.yaml

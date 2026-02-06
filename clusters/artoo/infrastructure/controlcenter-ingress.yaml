@@ -1,0 +1,23 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: controlcenter-ingress
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "110"  # After Confluent resources (wave 110)
+spec:
+  project: infrastructure
+  source:
+    repoURL: https://github.com/osowski/homelab-argocd.git
+    targetRevision: HEAD
+    path: infrastructure/controlcenter-ingress/overlays/artoo
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: confluent
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

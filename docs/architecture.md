@@ -59,10 +59,11 @@ Platform infrastructure components deployed before workloads.
 - **cert-manager** (wave 20) - TLS certificate management
 - **cert-manager-resources** (wave 75) - Self-signed ClusterIssuer and certificate resources
 - **argocd-ingress** (wave 80) - Traefik IngressRoute for ArgoCD UI access
+- **controlcenter-ingress** (wave 110) - Traefik IngressRoute for Confluent Control Center UI access
 
 **Deployed workloads:**
 - **confluent-operator** (wave 105) - Confluent for Kubernetes (CFK) operator for managing Confluent Platform
-- **confluent-resources** (wave 110) - Confluent Platform resources (KRaft, Kafka, Schema Registry)
+- **confluent-resources** (wave 110) - Confluent Platform resources (KRaft, Kafka, Schema Registry, Control Center)
 
 **Future components:**
 - **argocd** - ArgoCD self-management (currently manual install, future state target)
@@ -172,7 +173,8 @@ Applications deploy in waves using `argocd.argoproj.io/sync-wave` annotations:
 | 80 | argocd-ingress | Traefik IngressRoute for ArgoCD UI access |
 | 100 | workloads (parent) | Workloads App of Apps |
 | 105 | confluent-operator | Confluent for Kubernetes operator (CRDs and webhooks) |
-| 110 | confluent-resources | Confluent Platform resources (KRaft, Kafka, Schema Registry) |
+| 110 | confluent-resources | Confluent Platform resources (KRaft, Kafka, Schema Registry, Control Center) |
+| 110 | controlcenter-ingress | Traefik IngressRoute for Confluent Control Center UI access |
 | 105+ | workload apps | User-facing applications |
 
 Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., CRDs before resources that use them, ingress controller before applications with ingress).
