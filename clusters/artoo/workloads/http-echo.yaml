@@ -1,0 +1,25 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: http-echo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "105"
+spec:
+  project: workloads
+  source:
+    repoURL: https://github.com/osowski/homelab-argocd.git
+    targetRevision: HEAD
+    path: workloads/http-echo/overlays/artoo
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: http-echo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
