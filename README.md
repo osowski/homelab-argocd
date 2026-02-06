@@ -10,34 +10,59 @@ This repository contains the declarative configuration for all applications and 
 
 ```
 homelab-argocd/
-├── bootstrap/              # Helm chart for bootstrapping ArgoCD App of Apps
+├── bootstrap/                      # Helm chart for bootstrapping ArgoCD App of Apps
 │   ├── Chart.yaml
-│   ├── values.yaml         # Default values
-│   ├── values-*.yaml       # Cluster-specific values
+│   ├── values.yaml                 # Default values
 │   └── templates/
-│       ├── argocd-projects.yaml
-│       ├── infrastructure.yaml
-│       └── workloads.yaml
-├── argocd-projects/        # ArgoCD Project CRD definitions
+│       ├── argocd-projects.yaml    # ArgoCD Project CRDs (infrastructure, workloads)
+│       ├── infrastructure.yaml     # Infrastructure App of Apps
+│       └── workloads.yaml          # Workloads App of Apps
+├── argocd-projects/                # Standalone Project CRD definitions (reference)
 │   ├── infrastructure-project.yaml
 │   └── workloads-project.yaml
-├── infrastructure/         # Platform infrastructure applications
-│   └── (future: cert-manager, longhorn, monitoring)
-├── workloads/              # User-facing applications
-│   └── http-echo/
-│       ├── base/           # Base Kubernetes manifests
-│       └── overlays/       # Cluster-specific overlays
-│           └── portcullis/
-├── clusters/               # Cluster-specific application instances
-│   └── portcullis/
+├── infrastructure/                 # Platform infrastructure components
+│   ├── argocd-config/              # ArgoCD ConfigMap patches (custom health checks)
+│   ├── argocd-ingress/             # Traefik IngressRoute for ArgoCD UI
+│   ├── cert-manager/               # TLS certificate management (Helm)
+│   ├── cert-manager-resources/     # ClusterIssuer and Certificate resources
+│   ├── kube-prometheus-stack/      # Monitoring stack (Helm)
+│   ├── kube-prometheus-stack-crds/ # Prometheus Operator CRDs (Helm)
+│   └── traefik/                    # Ingress controller (Helm)
+├── workloads/                      # User-facing applications and services
+│   ├── cmf-operator/               # Confluent Manager for Apache Flink (Helm)
+│   ├── confluent-operator/         # Confluent for Kubernetes operator (Helm)
+│   ├── confluent-resources/        # Confluent Platform resources (Kustomize)
+│   ├── controlcenter-ingress/      # Traefik IngressRoute for Control Center UI
+│   ├── flink-kubernetes-operator/  # Flink Kubernetes Operator (Helm)
+│   ├── flink-resources/            # Flink integration resources (Kustomize)
+│   └── http-echo/                  # Validation service (Kustomize)
+│       ├── base/                   # Base Kubernetes manifests
+│       └── overlays/<cluster>/     # Cluster-specific overlays
+├── clusters/                       # Cluster-specific application instances
+│   ├── portcullis/
+│   │   ├── bootstrap.yaml          # Bootstrap Application (sync-wave 0)
+│   │   ├── infrastructure/
+│   │   │   ├── kustomization.yaml  # Lists all infrastructure apps
+│   │   │   └── *.yaml              # Infrastructure Application manifests
+│   │   └── workloads/
+│   │       ├── kustomization.yaml  # Lists all workload apps
+│   │       └── *.yaml              # Workload Application manifests
+│   └── artoo/
+│       ├── bootstrap.yaml
 │       ├── infrastructure/
 │       └── workloads/
-│           └── http-echo.yaml
-└── docs/                   # Documentation
+└── docs/                           # Documentation
     ├── architecture.md
     ├── adding-applications.md
+    ├── adding-helm-workloads.md
+    ├── argocd-self-management.md
     ├── bootstrap-procedure.md
-    └── cluster-onboarding.md
+    ├── changelog.md
+    ├── cluster-onboarding.md
+    ├── code_review_checklist.md
+    ├── confluent-flink.md
+    ├── confluent-platform.md
+    └── project_spec.md
 ```
 
 ## Quick Start
@@ -109,15 +134,32 @@ Navigate to https://localhost:8080 and login with username `admin` and the passw
 
 ## Current Clusters
 
-- **portcullis** - Primary homelab cluster
+- **portcullis** - Primary homelab cluster (portcullis.osow.ski)
+- **artoo** - Secondary homelab cluster (artoo.osow.ski)
 
 ## Current Applications
 
-### Workloads
-- **http-echo** - Validation service (echo.portcullis.osow.ski)
+### Infrastructure (Automated Sync)
+- **kube-prometheus-stack-crds** (wave 2) - Prometheus Operator CRDs
+- **traefik** (wave 10) - Ingress controller for external access
+- **kube-prometheus-stack** (wave 20) - Monitoring stack (Prometheus, Grafana, Alertmanager)
+- **cert-manager** (wave 20) - TLS certificate management
+- **cert-manager-resources** (wave 75) - Self-signed ClusterIssuer and certificates
+- **argocd-ingress** (wave 80) - Traefik IngressRoute for ArgoCD UI
+- **argocd-config** (wave 85) - ArgoCD ConfigMap patches for custom health checks
 
-### Infrastructure
-- (Future: cert-manager, longhorn, kube-prometheus-stack)
+### Workloads (Automated Sync)
+- **confluent-operator** (wave 105) - Confluent for Kubernetes (CFK) operator
+- **controlcenter-ingress** (wave 115) - Traefik IngressRoute for Confluent Control Center UI
+- **flink-kubernetes-operator** (wave 116) - Flink Kubernetes Operator for stream processing
+- **cmf-operator** (wave 118) - Confluent Manager for Apache Flink (CMF)
+- **http-echo** (wave 105) - Validation service
+
+### Workloads (Manual Sync Required)
+- **confluent-resources** (wave 110) - Confluent Platform resources (KRaft, Kafka, Schema Registry, Control Center, ksqlDB, Connect)
+- **flink-resources** (wave 120) - Flink integration resources (CMFRestClass, FlinkEnvironment)
+
+> **Note**: Applications marked as "Manual Sync Required" do not have automated sync policies. These must be manually synced via ArgoCD UI or CLI to allow review of configuration changes before deployment.
 
 ## Security
 

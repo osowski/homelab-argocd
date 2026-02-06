@@ -1,0 +1,7 @@
+# Flink Kubernetes Operator - Artoo Cluster Overlay
+# Cluster-specific configuration overrides
+
+# Additional pod labels for artoo cluster
+operatorPod:
+  labels:
+    cluster: artoo
