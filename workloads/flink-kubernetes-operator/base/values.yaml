@@ -1,0 +1,48 @@
+# Flink Kubernetes Operator Configuration
+# Base values for operator deployment
+
+# Replica configuration for homelab (single replica)
+replicaCount: 1
+
+# Resource limits and requests
+# Documentation recommends: 2 CPU, 3 GB RAM
+resources:
+  limits:
+    cpu: 2000m
+    memory: 3Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+# Image configuration
+image:
+  repository: confluentinc/cp-flink-kubernetes-operator
+  pullPolicy: IfNotPresent
+  # Tag defaults to chart appVersion
+
+# Kubernetes RBAC
+rbac:
+  create: true
+
+# Service account
+serviceAccount:
+  create: true
+  name: flink-kubernetes-operator
+
+# Watch all namespaces (default behavior)
+# Can be overridden in overlay to watch specific namespaces
+watchNamespaces:
+  - confluent
+
+# Operator configuration
+operatorConfiguration:
+  create: true
+
+# Webhook configuration
+webhook:
+  create: true
+
+# Pod labels
+podLabels:
+  app.kubernetes.io/name: flink-kubernetes-operator
+  app.kubernetes.io/component: operator

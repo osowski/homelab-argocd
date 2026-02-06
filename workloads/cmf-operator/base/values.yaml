@@ -1,0 +1,65 @@
+# Confluent Manager for Apache Flink (CMF) Configuration
+# Base values for CMF deployment
+
+# Replica configuration for homelab (single replica)
+replicaCount: 1
+
+# Resource limits and requests
+# Documentation recommends: 2 CPU, 1 GB RAM
+resources:
+  limits:
+    cpu: 2000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# Image configuration
+image:
+  repository: confluentinc/cp-cmf
+  pullPolicy: IfNotPresent
+  # Tag defaults to chart appVersion
+
+# Kubernetes RBAC
+rbac:
+  create: true
+
+# Service account
+serviceAccount:
+  create: true
+  name: cmf
+
+# Persistence for SQLite database
+persistence:
+  enabled: true
+  storageClass: ""  # Use default storage class
+  size: 10Gi
+  accessMode: ReadWriteOnce
+
+# Database configuration
+database:
+  type: sqlite
+  # SQLite uses local PVC storage
+
+# Security context
+podSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+
+# Pod labels
+podLabels:
+  app.kubernetes.io/name: cmf
+  app.kubernetes.io/component: manager
+
+# License configuration
+# CMF generates a trial license automatically if not provided
+license:
+  # Trial license will be generated
+  enabled: false

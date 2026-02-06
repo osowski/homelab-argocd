@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Confluent Platform for Apache Flink** (#26)
+  - **flink-kubernetes-operator** (sync-wave 116) - Helm-based Flink Kubernetes Operator deployment
+    - Manages Flink deployments and jobs on Kubernetes
+    - Resources: 2 CPU, 3 GB RAM
+    - Deployed to confluent namespace
+    - Watches confluent namespace for Flink resources
+  - **cmf-operator** (sync-wave 118) - Confluent Manager for Apache Flink (CMF) deployment
+    - Central management interface for Flink applications
+    - Resources: 2 CPU, 1 GB RAM, 10 GB storage (PVC)
+    - SQLite database for metadata persistence
+    - Trial license auto-generated for homelab use
+  - **flink-resources** (sync-wave 120) - Flink custom resources for integration
+    - CMFRestClass for CFK-CMF communication
+    - FlinkEnvironment with default settings and Kafka integration
+    - Integrates with existing Kafka broker and Schema Registry
+    - Conservative resource defaults for homelab (1 CPU, 1 GB per component)
+  - Enhanced workloads project RBAC for Flink CRDs
+    - Added flink.apache.org CRDs (FlinkDeployment, FlinkSessionJob)
+    - Added flink.confluent.io CRDs (CMFRestClass, FlinkEnvironment, FlinkApplication)
+  - Documentation: `docs/confluent-flink.md` with architecture and usage guide
 - **ArgoCD configuration management** via GitOps (#22)
   - Infrastructure: `argocd-config` application patches ArgoCD ConfigMap
   - Custom health check for Ingress resources (fixes forever "Progressing" status)

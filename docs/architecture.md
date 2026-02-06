@@ -65,6 +65,9 @@ Platform infrastructure components deployed before workloads.
 - **confluent-operator** (wave 105) - Confluent for Kubernetes (CFK) operator for managing Confluent Platform
 - **confluent-resources** (wave 110) - Confluent Platform resources (KRaft, Kafka, Schema Registry, Control Center)
 - **controlcenter-ingress** (wave 115) - Traefik IngressRoute for Confluent Control Center UI access
+- **flink-kubernetes-operator** (wave 116) - Flink Kubernetes Operator for managing Flink deployments
+- **cmf-operator** (wave 118) - Confluent Manager for Apache Flink (CMF) for central Flink management
+- **flink-resources** (wave 120) - Flink custom resources (CMFRestClass, FlinkEnvironment) for Kafka integration
 
 **Future components:**
 - **argocd** - ArgoCD self-management (currently manual install, future state target)
@@ -138,6 +141,10 @@ Bootstrap Application (sync-wave 0)
 │       └── Watches: clusters/<cluster>/workloads/
 │           ├── confluent-operator (sync-wave 105)
 │           ├── confluent-resources (sync-wave 110)
+│           ├── controlcenter-ingress (sync-wave 115)
+│           ├── flink-kubernetes-operator (sync-wave 116)
+│           ├── cmf-operator (sync-wave 118)
+│           ├── flink-resources (sync-wave 120)
 │           ├── http-echo (sync-wave 105)
 │           └── (future workload applications)
 ```
@@ -177,6 +184,9 @@ Applications deploy in waves using `argocd.argoproj.io/sync-wave` annotations:
 | 105 | confluent-operator | Confluent for Kubernetes operator (CRDs and webhooks) |
 | 110 | confluent-resources | Confluent Platform resources (KRaft, Kafka, Schema Registry, Control Center) |
 | 115 | controlcenter-ingress | Traefik IngressRoute for Confluent Control Center UI access |
+| 116 | flink-kubernetes-operator | Flink Kubernetes Operator (manages Flink deployments and jobs) |
+| 118 | cmf-operator | Confluent Manager for Apache Flink (central management interface) |
+| 120 | flink-resources | Flink custom resources (CMFRestClass, FlinkEnvironment) for Kafka integration |
 | 105+ | workload apps | User-facing applications |
 
 Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., CRDs before resources that use them, ingress controller before applications with ingress).
@@ -192,10 +202,12 @@ Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., 
 ### Workloads Project
 
 - **Scope**: Primarily namespace-scoped with limited cluster-scoped permissions
-- **Allowed**: Deployments, Services, Ingress, ConfigMaps, Secrets, CRDs (apiextensions.k8s.io), ValidatingWebhookConfigurations, Confluent Platform CRs (platform.confluent.io)
+- **Allowed**: Deployments, Services, Ingress, ConfigMaps, Secrets, CRDs (apiextensions.k8s.io), ValidatingWebhookConfigurations, Confluent Platform CRs (platform.confluent.io), Flink CRs (flink.apache.org, flink.confluent.io)
 - **Denied**: Most cluster-scoped resources (ClusterRoles, PersistentVolumes, etc.)
 - **Use case**: Application workloads including operators that manage CRDs
-- **Note**: Enhanced RBAC added for Confluent for Kubernetes operator to manage its 22 CRDs and webhooks
+- **Note**: Enhanced RBAC added for:
+  - Confluent for Kubernetes operator (22 CRDs and webhooks)
+  - Flink Kubernetes Operator and CMF (FlinkDeployment, FlinkSessionJob, CMFRestClass, FlinkEnvironment, FlinkApplication)
 
 ## Naming Conventions
 

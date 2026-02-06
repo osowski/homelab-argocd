@@ -1,0 +1,11 @@
+# Confluent Manager for Apache Flink - Portcullis Cluster Overlay
+# Cluster-specific configuration overrides
+
+# Additional pod labels for portcullis
+podLabels:
+  cluster: portcullis
+
+# Service annotations for potential future ingress
+service:
+  annotations:
+    cluster: portcullis
