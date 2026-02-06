@@ -115,3 +115,7 @@ spec:
       kind: KsqlDB
     - group: platform.confluent.io
       kind: ControlCenter
+    - group: cert-manager.io
+      kind: Certificate
+    - group: traefik.io
+      kind: IngressRoute
