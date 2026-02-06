@@ -62,7 +62,8 @@ Platform infrastructure components deployed before workloads.
 
 **Deployed workloads:**
 - **confluent-operator** (wave 105) - Confluent for Kubernetes (CFK) operator for managing Confluent Platform
-- **confluent-resources** (wave 110) - Confluent Platform resources (KRaft, Kafka, Schema Registry)
+- **confluent-resources** (wave 110) - Confluent Platform resources (KRaft, Kafka, Schema Registry, Control Center)
+- **controlcenter-ingress** (wave 115) - Traefik IngressRoute for Confluent Control Center UI access
 
 **Future components:**
 - **argocd** - ArgoCD self-management (currently manual install, future state target)
@@ -172,7 +173,8 @@ Applications deploy in waves using `argocd.argoproj.io/sync-wave` annotations:
 | 80 | argocd-ingress | Traefik IngressRoute for ArgoCD UI access |
 | 100 | workloads (parent) | Workloads App of Apps |
 | 105 | confluent-operator | Confluent for Kubernetes operator (CRDs and webhooks) |
-| 110 | confluent-resources | Confluent Platform resources (KRaft, Kafka, Schema Registry) |
+| 110 | confluent-resources | Confluent Platform resources (KRaft, Kafka, Schema Registry, Control Center) |
+| 115 | controlcenter-ingress | Traefik IngressRoute for Confluent Control Center UI access |
 | 105+ | workload apps | User-facing applications |
 
 Lower wave numbers deploy first. This ensures dependencies are satisfied (e.g., CRDs before resources that use them, ingress controller before applications with ingress).
