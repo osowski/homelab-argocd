@@ -5,4 +5,7 @@ resources:
   - confluent-operator.yaml
   - confluent-resources.yaml
   - controlcenter-ingress.yaml
+  - flink-kubernetes-operator.yaml
+  - cmf-operator.yaml
+  - flink-resources.yaml
 #- http-echo.yaml

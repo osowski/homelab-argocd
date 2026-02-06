@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference base configuration
+resources:
+  - ../../base
+
+# Cluster-specific labels
+commonLabels:
+  cluster: portcullis
+
+# Future: Add cluster-specific patches here if needed
+# patches:
+#   - path: flink-environment-patch.yaml
+#     target:
+#       kind: FlinkEnvironment

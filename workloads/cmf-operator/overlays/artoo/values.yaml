@@ -1,0 +1,6 @@
+# Confluent Manager for Apache Flink - Artoo Cluster Overlay
+# Cluster-specific configuration overrides
+
+# Additional pod annotations for artoo cluster identification
+podAnnotations:
+  cluster: artoo

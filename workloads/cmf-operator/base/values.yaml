@@ -1,0 +1,15 @@
+# Confluent Manager for Apache Flink (CMF) Configuration
+# Base values - only overrides from chart defaults
+
+# Resource requests - Lower than chart defaults for homelab efficiency
+# Chart defaults: requests.cpu: 1, requests.memory: 1024Mi
+# Chart defaults: limits.cpu: 2, limits.memory: 1024Mi (kept as-is)
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# Custom service account name
+# Chart default: auto-generated name
+serviceAccount:
+  name: cmf

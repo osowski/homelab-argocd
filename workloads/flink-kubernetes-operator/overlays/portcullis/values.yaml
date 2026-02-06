@@ -1,0 +1,7 @@
+# Flink Kubernetes Operator - Portcullis Cluster Overlay
+# Cluster-specific configuration overrides
+
+# Additional pod labels for portcullis cluster
+operatorPod:
+  labels:
+    cluster: portcullis
