@@ -1,3 +1,5 @@
+deployment:
+  kind: DaemonSet
 image:
   repository: traefik
   pullPolicy: IfNotPresent
