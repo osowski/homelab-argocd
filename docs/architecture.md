@@ -55,6 +55,7 @@ Platform infrastructure components deployed before workloads.
 **Deployed components:**
 - **kube-prometheus-stack-crds** (wave 2) - Prometheus Operator CRDs deployed early for availability
 - **traefik** (wave 10) - Ingress controller for external access
+- **longhorn** (wave 15) - Distributed block storage with persistent volume provisioning
 - **kube-prometheus-stack** (wave 20) - Monitoring stack with Prometheus, Grafana, Alertmanager
 - **cert-manager** (wave 20) - TLS certificate management
 - **cert-manager-resources** (wave 75) - Self-signed ClusterIssuer and certificate resources
@@ -71,8 +72,10 @@ Platform infrastructure components deployed before workloads.
 
 **Future components:**
 - **argocd** - ArgoCD self-management (currently manual install, future state target)
-- **longhorn** - Persistent storage
 - **external-dns** - DNS automation
+
+**Prerequisites:**
+- **open-iscsi** - iSCSI initiator required for Longhorn storage (installed on cluster nodes via homelab-ansible, see [homelab-ansible#43](https://github.com/osowski/homelab-ansible/issues/43))
 
 **Structure:**
 ```
@@ -132,11 +135,12 @@ Bootstrap Application (sync-wave 0)
 │   │   └── Watches: clusters/<cluster>/infrastructure/
 │   │       ├── kube-prometheus-stack-crds (sync-wave 2)
 │   │       ├── traefik (sync-wave 10)
+│   │       ├── longhorn (sync-wave 15)
 │   │       ├── kube-prometheus-stack (sync-wave 20)
 │   │       ├── cert-manager (sync-wave 20)
 │   │       ├── cert-manager-resources (sync-wave 75)
 │   │       ├── argocd-ingress (sync-wave 80)
-│   │       └── (future infrastructure components)
+│   │       └── argocd-config (sync-wave 85)
 │   └── workloads (Parent Application, sync-wave 100)
 │       └── Watches: clusters/<cluster>/workloads/
 │           ├── confluent-operator (sync-wave 105)
@@ -175,6 +179,7 @@ Applications deploy in waves using `argocd.argoproj.io/sync-wave` annotations:
 | 1 | infrastructure (parent) | Infrastructure App of Apps |
 | 2 | kube-prometheus-stack-crds | Prometheus Operator CRDs for early availability |
 | 10 | traefik | Ingress controller for external access |
+| 15 | longhorn | Distributed block storage for persistent volumes |
 | 20 | kube-prometheus-stack | Monitoring stack (Prometheus, Grafana, Alertmanager) |
 | 20 | cert-manager | TLS certificate management |
 | 75 | cert-manager-resources | Self-signed ClusterIssuer and certificate resources |

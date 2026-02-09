@@ -1,0 +1,51 @@
+# Base configuration for Longhorn distributed block storage
+# Shared across all clusters
+
+# Persistence settings
+persistence:
+  defaultClass: true
+  defaultFsType: ext4
+  defaultClassReplicaCount: 2  # Homelab configuration with limited nodes
+  defaultDataLocality: best-effort  # Prefer local data access when possible
+  reclaimPolicy: Delete
+
+# Default settings
+defaultSettings:
+  # Disable backup features - no backup requirements for this environment
+  backupTarget: ""
+  backupTargetCredentialSecret: ""
+
+  # Storage configuration
+  defaultReplicaCount: 2
+  storageMinimalAvailablePercentage: 15
+
+  # Performance and reliability
+  guaranteedInstanceManagerCpu: 5  # Reduced for homelab
+  replicaSoftAntiAffinity: true
+  autoCleanupSystemGeneratedSnapshot: true
+  autoDeletePodWhenVolumeDetachedUnexpectedly: true
+
+  # Scheduling
+  replicaReplenishmentWaitInterval: 300
+
+# Longhorn Manager resources
+longhornManager:
+  priorityClass: ~
+  tolerations: []
+  nodeSelector: {}
+
+# Longhorn Driver resources
+longhornDriver:
+  priorityClass: ~
+  tolerations: []
+  nodeSelector: {}
+
+# Longhorn UI resources
+longhornUI:
+  priorityClass: ~
+  tolerations: []
+  nodeSelector: {}
+
+# Disable default ingress - using Traefik IngressRoute via extraObjects in overlay
+ingress:
+  enabled: false
