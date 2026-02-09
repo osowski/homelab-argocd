@@ -28,7 +28,7 @@ spec:
       kind: Deployment
       name: confluent-manager-for-apache-flink
       jsonPointers:
-        - /metadata/annotations/rollme
+        - /spec/template/metadata/annotations/rollme
   syncPolicy:
     automated:
       prune: true
