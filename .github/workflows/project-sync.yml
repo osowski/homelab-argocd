@@ -1,0 +1,218 @@
+name: Sync to Homelab Project Board
+
+on:
+  issues:
+    types: [opened, reopened, closed, labeled, unlabeled]
+  pull_request:
+    types: [opened, reopened, closed, ready_for_review, labeled, unlabeled]
+
+jobs:
+  sync-to-project:
+    runs-on: ubuntu-latest
+    name: Sync issue/PR to project board
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/.project-config.json
+            scripts/lib
+
+      - name: Sync to project
+        uses: actions/github-script@v7
+        env:
+          PROJECT_ID: "PVT_kwHOADQJE84BOwZ1"
+          PROJECT_NUMBER: "22"
+          USER_LOGIN: "osowski"
+        with:
+          github-token: ${{ secrets.GH_PROJECT_TOKEN }}
+          script: |
+            const projectId = process.env.PROJECT_ID;
+            const projectNumber = parseInt(process.env.PROJECT_NUMBER);
+            const userLogin = process.env.USER_LOGIN;
+
+            // Load project config
+            const fs = require('fs');
+            const config = JSON.parse(fs.readFileSync('./scripts/.project-config.json', 'utf8'));
+
+            const fields = config.fields;
+
+            // Get event details
+            const isIssue = context.payload.issue !== undefined;
+            const isPR = context.payload.pull_request !== undefined;
+            const item = isIssue ? context.payload.issue : context.payload.pull_request;
+            const itemId = item.node_id;
+            const itemNumber = item.number;
+            const repo = context.repo;
+
+            console.log(`Processing ${isIssue ? 'issue' : 'PR'} #${itemNumber}`);
+
+            // Query to get project structure and check if item exists
+            const projectQuery = `
+              query($login: String!, $number: Int!) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    items(first: 100) {
+                      nodes {
+                        id
+                        content {
+                          ... on Issue { id }
+                          ... on PullRequest { id }
+                        }
+                      }
+                    }
+                    fields(first: 20) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options { id name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const projectData = await github.graphql(projectQuery, {
+              login: userLogin,
+              number: projectNumber
+            });
+
+            const project = projectData.user.projectV2;
+
+            // Check if item already in project
+            const existingItem = project.items.nodes.find(
+              node => node.content && node.content.id === itemId
+            );
+
+            let projectItemId;
+
+            if (!existingItem) {
+              // Add item to project
+              console.log('Adding item to project...');
+              const addMutation = `
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
+                    item { id }
+                  }
+                }
+              `;
+
+              const addResult = await github.graphql(addMutation, {
+                projectId: projectId,
+                contentId: itemId
+              });
+
+              projectItemId = addResult.addProjectV2ItemById.item.id;
+              console.log(`Item added with ID: ${projectItemId}`);
+            } else {
+              projectItemId = existingItem.id;
+              console.log(`Item already in project: ${projectItemId}`);
+            }
+
+            // Helper function to get field by name
+            const getField = (name) => project.fields.nodes.find(f => f.name === name);
+
+            // Helper function to get option ID by name
+            const getOptionId = (field, optionName) => {
+              const option = field.options.find(o => o.name === optionName);
+              return option ? option.id : null;
+            };
+
+            // Helper function to update field
+            const updateField = async (fieldId, value) => {
+              const mutation = `
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+                  updateProjectV2ItemFieldValue(
+                    input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value}
+                  ) {
+                    projectV2Item { id }
+                  }
+                }
+              `;
+
+              await github.graphql(mutation, {
+                projectId: projectId,
+                itemId: projectItemId,
+                fieldId: fieldId,
+                value: value
+              });
+            };
+
+            // Determine workflow state based on event
+            const workflowStateField = getField('Workflow State');
+            let workflowState = null;
+
+            if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
+              if (isPR) {
+                workflowState = '👀 In Review';
+              } else {
+                workflowState = '📋 Backlog';
+              }
+            } else if (context.payload.action === 'closed') {
+              workflowState = '✅ Done';
+            } else if (context.payload.action === 'ready_for_review' && isPR) {
+              workflowState = '👀 In Review';
+            }
+
+            if (workflowState && workflowStateField) {
+              const optionId = getOptionId(workflowStateField, workflowState);
+              if (optionId) {
+                console.log(`Setting Workflow State to: ${workflowState}`);
+                await updateField(fields.workflow_state.id, {singleSelectOptionId: optionId});
+              }
+            }
+
+            // Map labels to Priority
+            const priorityField = getField('Priority');
+            if (priorityField && item.labels) {
+              let priority = null;
+
+              // Check for explicit priority labels
+              if (item.labels.find(l => l.name === 'P0')) priority = 'P0 - Critical';
+              else if (item.labels.find(l => l.name === 'P1')) priority = 'P1 - High';
+              else if (item.labels.find(l => l.name === 'P2')) priority = 'P2 - Medium';
+              else if (item.labels.find(l => l.name === 'P3')) priority = 'P3 - Low';
+              // Infer from type
+              else if (item.labels.find(l => l.name === 'bug')) priority = 'P2 - Medium';
+              else if (item.labels.find(l => l.name === 'enhancement')) priority = 'P3 - Low';
+              else priority = 'P4 - Backlog';
+
+              if (priority) {
+                const optionId = getOptionId(priorityField, priority);
+                if (optionId) {
+                  console.log(`Setting Priority to: ${priority}`);
+                  await updateField(fields.priority.id, {singleSelectOptionId: optionId});
+                }
+              }
+            }
+
+            // Map labels to Type
+            const typeField = getField('Type');
+            if (typeField && item.labels) {
+              let type = null;
+
+              if (item.labels.find(l => l.name === 'feature')) type = '🎯 Feature';
+              else if (item.labels.find(l => l.name === 'bug')) type = '🐛 Bug';
+              else if (item.labels.find(l => l.name === 'enhancement')) type = '✨ Enhancement';
+              else if (item.labels.find(l => l.name === 'documentation')) type = '📚 Documentation';
+              else if (item.labels.find(l => l.name === 'prd')) type = '📋 PRD';
+              else if (item.labels.find(l => l.name === 'maintenance') || item.labels.find(l => l.name === 'refactoring')) {
+                type = '🔧 Maintenance';
+              }
+              else type = '✨ Enhancement';
+
+              if (type) {
+                const optionId = getOptionId(typeField, type);
+                if (optionId) {
+                  console.log(`Setting Type to: ${type}`);
+                  await updateField(fields.type.id, {singleSelectOptionId: optionId});
+                }
+              }
+            }
+
+            console.log('Sync complete!');
