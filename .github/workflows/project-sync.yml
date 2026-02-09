@@ -12,13 +12,6 @@ jobs:
     name: Sync issue/PR to project board
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            scripts/.project-config.json
-            scripts/lib
-
       - name: Sync to project
         uses: actions/github-script@v7
         env:
@@ -32,11 +25,15 @@ jobs:
             const projectNumber = parseInt(process.env.PROJECT_NUMBER);
             const userLogin = process.env.USER_LOGIN;
 
-            // Load project config
-            const fs = require('fs');
-            const config = JSON.parse(fs.readFileSync('./scripts/.project-config.json', 'utf8'));
-
-            const fields = config.fields;
+            // Project field IDs (from homelab-docs project config)
+            const fields = {
+              workflow_state: { id: "PVTSSF_lAHOADQJE84BOwZ1zg9XTvA", name: "Workflow State" },
+              priority: { id: "PVTSSF_lAHOADQJE84BOwZ1zg9XTvE", name: "Priority" },
+              type: { id: "PVTSSF_lAHOADQJE84BOwZ1zg9XTvI", name: "Type" },
+              complexity: { id: "PVTSSF_lAHOADQJE84BOwZ1zg9XTvQ", name: "Complexity" },
+              dependencies: { id: "PVTF_lAHOADQJE84BOwZ1zg9XTv4", name: "Dependencies" },
+              due_date: { id: "PVTF_lAHOADQJE84BOwZ1zg9XTv8", name: "Due Date" }
+            };
 
             // Get event details
             const isIssue = context.payload.issue !== undefined;
