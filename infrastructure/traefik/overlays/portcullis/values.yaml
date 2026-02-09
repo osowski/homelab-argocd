@@ -2,8 +2,7 @@ deployment:
   kind: DaemonSet
 service:
   type: LoadBalancer
-#nodeSelector:
-#  ingress-ready: 'true'
+nodeSelector: ~
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Equal
