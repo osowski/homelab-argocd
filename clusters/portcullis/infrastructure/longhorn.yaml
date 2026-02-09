@@ -32,6 +32,8 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true  # Required for CRDs
+      - Replace=true  # Handle Helm hooks (pre-upgrade jobs) on initial install
+      - SkipDryRunOnMissingResource=true  # Skip dry-run for resources that don't exist yet
     retry:
       limit: 5
       backoff:
