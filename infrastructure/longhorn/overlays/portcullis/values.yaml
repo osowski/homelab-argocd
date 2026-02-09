@@ -1,0 +1,40 @@
+# Portcullis cluster-specific configuration for Longhorn
+
+# Add Traefik IngressRoute and Certificate for Longhorn UI
+extraObjects:
+  # Certificate for Longhorn UI TLS
+  - apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: longhorn-tls
+      namespace: longhorn-system
+    spec:
+      dnsNames:
+      - longhorn.portcullis.osow.ski
+      issuerRef:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: selfsigned-cluster-issuer
+      secretName: longhorn-tls
+      usages:
+      - digital signature
+      - key encipherment
+
+  # IngressRoute for Longhorn UI
+  - apiVersion: traefik.io/v1alpha1
+    kind: IngressRoute
+    metadata:
+      name: longhorn-frontend
+      namespace: longhorn-system
+    spec:
+      entryPoints:
+        - websecure
+      routes:
+        - match: Host(`longhorn.portcullis.osow.ski`)
+          kind: Rule
+          services:
+            - name: longhorn-frontend
+              port: 80
+              scheme: http
+      tls:
+        secretName: longhorn-tls

@@ -9,4 +9,5 @@ resources:
 - cert-manager-resources.yaml
 - kube-prometheus-stack-crds.yaml
 - kube-prometheus-stack.yaml
+- longhorn.yaml
 - traefik.yaml

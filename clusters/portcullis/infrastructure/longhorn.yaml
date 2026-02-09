@@ -1,0 +1,40 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "15"  # After traefik (10), before cert-manager (20)
+spec:
+  project: infrastructure
+  sources:
+  - repoURL: https://charts.longhorn.io
+    targetRevision: v1.11.0  # Pin to specific version
+    chart: longhorn
+    helm:
+      ignoreMissingValueFiles: true
+      valueFiles:
+        - $values/infrastructure/longhorn/base/values.yaml
+        - $values/infrastructure/longhorn/overlays/portcullis/values.yaml
+  - repoURL: https://github.com/osowski/homelab-argocd
+    targetRevision: HEAD
+    ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true  # Required for CRDs
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

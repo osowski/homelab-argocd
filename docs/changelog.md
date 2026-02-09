@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Longhorn distributed block storage** (#8)
+  - Infrastructure: `longhorn` application (sync-wave 15) deployed via Helm
+  - Default StorageClass for persistent volume provisioning
+  - Configuration optimized for homelab with 2 replicas per volume
+  - Deployed to longhorn-system namespace on portcullis cluster
+  - Longhorn UI accessible at `longhorn.portcullis.osow.ski` via Traefik IngressRoute
+  - TLS certificate via cert-manager with self-signed ClusterIssuer
+  - IngressRoute and Certificate defined via Helm `extraObjects` feature
+  - Prerequisites (open-iscsi) installed on cluster nodes via [homelab-ansible#43](https://github.com/osowski/homelab-ansible/issues/43)
+  - No backup configuration (S3, NFS) - homelab environment has no backup requirements
 - **Confluent Platform for Apache Flink** (#26)
   - **flink-kubernetes-operator** (sync-wave 116) - Helm-based Flink Kubernetes Operator deployment
     - Manages Flink deployments and jobs on Kubernetes

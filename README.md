@@ -142,6 +142,7 @@ Navigate to https://localhost:8080 and login with username `admin` and the passw
 ### Infrastructure (Automated Sync)
 - **kube-prometheus-stack-crds** (wave 2) - Prometheus Operator CRDs
 - **traefik** (wave 10) - Ingress controller for external access
+- **longhorn** (wave 15) - Distributed block storage for persistent volumes (portcullis only)
 - **kube-prometheus-stack** (wave 20) - Monitoring stack (Prometheus, Grafana, Alertmanager)
 - **cert-manager** (wave 20) - TLS certificate management
 - **cert-manager-resources** (wave 75) - Self-signed ClusterIssuer and certificates
