@@ -23,6 +23,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: confluent
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: confluent-manager-for-apache-flink
+      jsonPointers:
+        - /metadata/annotations/rollme
   syncPolicy:
     automated:
       prune: true
