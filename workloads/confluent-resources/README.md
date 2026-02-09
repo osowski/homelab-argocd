@@ -286,3 +286,4 @@ To integrate with external Prometheus (kube-prometheus-stack):
 - [ ] Let's Encrypt TLS certificates
 - [ ] Rate limiting on external endpoints
 - [ ] Monitoring dashboards in Grafana
+   - [ ] Validate https://github.com/confluentinc/confluent-kubernetes-examples/tree/master/monitoring/grafana-dashboard
