@@ -287,3 +287,4 @@ To integrate with external Prometheus (kube-prometheus-stack):
 - [ ] Rate limiting on external endpoints
 - [ ] Monitoring dashboards in Grafana
    - [ ] Validate https://github.com/confluentinc/confluent-kubernetes-examples/tree/master/monitoring/grafana-dashboard
+   - [ ] Validate https://github.com/confluentinc/jmx-monitoring-stacks/tree/main/jmxexporter-prometheus-grafana
