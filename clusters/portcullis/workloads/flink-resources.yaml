@@ -17,5 +17,3 @@ spec:
     server: https://kubernetes.default.svc
     namespace: flink
   syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
