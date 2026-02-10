@@ -7,6 +7,8 @@ resources:
   - cmfrestclass.yaml
   - flink-environment.yaml
   - flink-application.yaml
+  - service.yaml
+  - servicemonitor.yaml
 
 # Common labels applied to all resources
 commonLabels:
