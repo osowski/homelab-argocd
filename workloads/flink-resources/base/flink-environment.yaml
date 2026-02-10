@@ -1,4 +1,4 @@
-apiVersion: flink.confluent.io/v1beta1
+apiVersion: platform.confluent.io/v1beta1
 kind: FlinkEnvironment
 metadata:
   name: default-flink-env
