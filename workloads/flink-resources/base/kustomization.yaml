@@ -9,6 +9,7 @@ resources:
   - flink-application.yaml
   - service.yaml
   - servicemonitor.yaml
+  - grafana-dashboard.yaml
 
 # Common labels applied to all resources
 labels:
