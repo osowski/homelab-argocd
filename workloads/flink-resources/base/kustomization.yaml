@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: flink
 
 resources:
-  - namespace.yaml
   - cmfrestclass.yaml
   - flink-environment.yaml
 
