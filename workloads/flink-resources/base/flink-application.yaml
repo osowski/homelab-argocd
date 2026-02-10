@@ -1,3 +1,4 @@
+# REFERENCE: https://docs.confluent.io/operator/current/co-manage-flink.html#create-a-af-application
 apiVersion: platform.confluent.io/v1beta1
 kind: FlinkApplication
 metadata:

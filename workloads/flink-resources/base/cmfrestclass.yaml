@@ -1,3 +1,4 @@
+# REFERENCE: https://docs.confluent.io/operator/current/co-manage-flink.html#create-a-cmf-rest-class
 apiVersion: platform.confluent.io/v1beta1
 kind: CMFRestClass
 metadata:
