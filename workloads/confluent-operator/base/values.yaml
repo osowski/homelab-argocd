@@ -41,4 +41,6 @@ image:
 
 # Operator watches only the kafka namespace where Confluent Platform CRs are deployed
 namespaceList:
+  - flink
   - kafka
+  - operator
