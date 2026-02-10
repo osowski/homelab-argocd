@@ -6,6 +6,7 @@ namespace: flink
 resources:
   - cmfrestclass.yaml
   - flink-environment.yaml
+  - flink-application.yaml
 
 # Common labels applied to all resources
 commonLabels:
