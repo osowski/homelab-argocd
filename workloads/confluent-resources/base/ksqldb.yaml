@@ -2,7 +2,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KsqlDB
 metadata:
   name: ksqldb
-  namespace: confluent
+  namespace: kafka
 spec:
   replicas: 1
   image:

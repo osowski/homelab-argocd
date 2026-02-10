@@ -1,10 +1,10 @@
 # Flink Kubernetes Operator Configuration
 # Base values - only overrides from chart defaults
 
-# Limit operator to watch only confluent namespace
+# Limit operator to watch only flink namespace where Flink CRs are deployed
 # Chart default: [] (all namespaces)
 watchNamespaces:
-  - confluent
+  - flink
 
 # Resource requests - Lower than chart defaults for homelab efficiency
 # Chart defaults: requests.cpu: 2, requests.memory: 3Gi

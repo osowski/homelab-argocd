@@ -15,7 +15,7 @@ spec:
     path: workloads/confluent-resources/overlays/artoo
   destination:
     server: https://kubernetes.default.svc
-    namespace: confluent
+    namespace: kafka
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

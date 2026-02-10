@@ -1,12 +1,12 @@
-apiVersion: flink.confluent.io/v1beta1
+apiVersion: platform.confluent.io/v1beta1
 kind: CMFRestClass
 metadata:
   name: cmf-rest-class
-  namespace: confluent
+  namespace: flink
 spec:
   # CMF service endpoint
-  # Assumes CMF is deployed in the same namespace
-  endpoint: http://cmf.confluent.svc.cluster.local:8080
+  # CMF is deployed in the operator namespace
+  endpoint: http://cmf-service.operator.svc.cluster.local:8080
 
   # Authentication configuration
   # Currently using no authentication (will add mTLS in future if needed)

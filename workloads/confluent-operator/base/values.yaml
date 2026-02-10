@@ -39,6 +39,6 @@ image:
   pullPolicy: IfNotPresent
   # Tag defaults to chart appVersion
 
-# Operator watches only the namespaces it's deployed to
+# Operator watches only the kafka namespace where Confluent Platform CRs are deployed
 namespaceList:
-  - confluent
+  - kafka
