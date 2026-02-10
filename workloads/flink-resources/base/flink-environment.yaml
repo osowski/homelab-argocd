@@ -4,44 +4,28 @@ metadata:
   name: default-flink-env
   namespace: flink
 spec:
+  kubernetesNamespace: flink
+
   # Reference to CMFRestClass for CMF communication
   cmfRestClassRef:
     name: cmf-rest-class
     namespace: flink
 
-  # Kafka cluster configuration
-  # References existing Kafka broker deployed by confluent-resources
-  kafkaCluster:
-    bootstrapServers: kafka.kafka.svc.cluster.local:9092
-    # Authentication will be added when Kafka security is configured
-    # Currently using PLAINTEXT for simplicity
-
-  # Schema Registry configuration
-  # References existing Schema Registry deployed by confluent-resources
-  schemaRegistry:
-    url: http://schemaregistry.kafka.svc.cluster.local:8081
-
   # Default resource configuration for Flink jobs
-  # Conservative values for homelab environment
-  flinkConfiguration:
-    # JobManager configuration
-    jobmanager.memory.process.size: "1024m"
-    jobmanager.cpu: "1.0"
+  flinkApplicationDefaults:
+    #metadata:
+    #  labels:
+    #     "owned-by": "team-name"
+    spec:  
+      # Conservative values for homelab environment
+      flinkConfiguration:
+        # JobManager configuration
+        jobmanager.memory.process.size: "1024m"
+        jobmanager.cpu: "1.0"
 
-    # TaskManager configuration
-    taskmanager.memory.process.size: "1024m"
-    taskmanager.cpu: "1.0"
-    taskmanager.numberOfTaskSlots: "2"
+        # TaskManager configuration
+        taskmanager.memory.process.size: "1024m"
+        taskmanager.cpu: "1.0"
+        taskmanager.numberOfTaskSlots: "2"
 
-    # Checkpointing configuration
-    state.backend: rocksdb
-    state.checkpoints.dir: "file:///tmp/flink-checkpoints"
-    state.savepoints.dir: "file:///tmp/flink-savepoints"
-    execution.checkpointing.interval: "60s"
-    execution.checkpointing.mode: "EXACTLY_ONCE"
-
-    # Restart strategy
-    restart-strategy: "failure-rate"
-    restart-strategy.failure-rate.max-failures-per-interval: "3"
-    restart-strategy.failure-rate.failure-rate-interval: "5 min"
-    restart-strategy.failure-rate.delay: "10 s"
+        rest.profiling.enabled: "true"
