@@ -128,9 +128,9 @@ spec:
       kind: FlinkDeployment
     - group: flink.apache.org
       kind: FlinkSessionJob
-    - group: flink.confluent.io
+    - group: platform.confluent.io
       kind: CMFRestClass
-    - group: flink.confluent.io
+    - group: platform.confluent.io
       kind: FlinkEnvironment
-    - group: flink.confluent.io
+    - group: platform.confluent.io
       kind: FlinkApplication
