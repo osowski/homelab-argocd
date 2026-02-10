@@ -9,10 +9,11 @@ resources:
     cpu: 500m
     memory: 512Mi
 
+## NOTE: cmf-operator does not seem to watch namespace-specific resources
 # Namespaces to watch for Flink custom resources
 # CMF watches only the flink namespace where Flink CRs are deployed
-namespaces:
-  - flink
+##namespaces:
+##  - flink
 
 # Custom service account name
 # Chart default: auto-generated name
