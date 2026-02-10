@@ -13,31 +13,31 @@ This directory contains the Confluent Platform component deployments managed by 
 - **Purpose:** Event streaming platform
 - **Replicas:** 1 (3 in production)
 - **Resources:** 2 CPU, 4GB RAM, 50GB storage
-- **Internal endpoint:** `kafka.confluent.svc.cluster.local:9071`
+- **Internal endpoint:** `kafka.kafka.svc.cluster.local:9071`
 
 ### Schema Registry
 - **Purpose:** Schema management for Kafka messages
 - **Replicas:** 1
 - **Resources:** 0.5 CPU, 1GB RAM
-- **Internal endpoint:** `schemaregistry.confluent.svc.cluster.local:8081`
+- **Internal endpoint:** `schemaregistry.kafka.svc.cluster.local:8081`
 
 ### Kafka Connect
 - **Purpose:** Data integration with external systems
 - **Replicas:** 1
 - **Resources:** 1 CPU, 2GB RAM
-- **Internal endpoint:** `connect.confluent.svc.cluster.local:8083`
+- **Internal endpoint:** `connect.kafka.svc.cluster.local:8083`
 
 ### ksqlDB
 - **Purpose:** Stream processing with SQL
 - **Replicas:** 1
 - **Resources:** 1 CPU, 2GB RAM
-- **Internal endpoint:** `ksqldb.confluent.svc.cluster.local:8088`
+- **Internal endpoint:** `ksqldb.kafka.svc.cluster.local:8088`
 
 ### Control Center
 - **Purpose:** Web-based UI for managing and monitoring Confluent Platform
 - **Replicas:** 1
 - **Resources:** 1 CPU, 2GB RAM
-- **Internal endpoint:** `controlcenter.confluent.svc.cluster.local:9021`
+- **Internal endpoint:** `controlcenter.kafka.svc.cluster.local:9021`
 - **Includes:** Embedded Prometheus and Alertmanager
 
 ## External Access
@@ -106,25 +106,25 @@ curl -k https://controlcenter.portcullis.osow.ski
 
 ```bash
 # All Confluent Platform components
-kubectl get kafka,kraftcontroller,schemaregistry,ksqldb,connect,controlcenter -n confluent
+kubectl get kafka,kraftcontroller,schemaregistry,ksqldb,connect,controlcenter -n kafka
 
 # Control Center specifically
-kubectl get controlcenter -n confluent controlcenter -o yaml
+kubectl get controlcenter -n kafka controlcenter -o yaml
 
 # Control Center pods and logs
-kubectl get pods -n confluent -l app=controlcenter
-kubectl logs -n confluent controlcenter-0
+kubectl get pods -n kafka -l app=controlcenter
+kubectl logs -n kafka controlcenter-0
 ```
 
 ### Verify IngressRoute
 
 ```bash
 # Check IngressRoute exists
-kubectl get ingressroute -n confluent controlcenter
+kubectl get ingressroute -n kafka controlcenter
 
 # Check TLS certificate
-kubectl get certificate -n confluent controlcenter-tls
-kubectl describe certificate -n confluent controlcenter-tls
+kubectl get certificate -n kafka controlcenter-tls
+kubectl describe certificate -n kafka controlcenter-tls
 ```
 
 ### Port Forwarding (Alternative Access)
@@ -132,7 +132,7 @@ kubectl describe certificate -n confluent controlcenter-tls
 If IngressRoute is not working, access Control Center directly via port-forward:
 
 ```bash
-kubectl port-forward -n confluent svc/controlcenter 9021:9021
+kubectl port-forward -n kafka svc/controlcenter 9021:9021
 # Then browse to: http://localhost:9021
 ```
 
@@ -142,25 +142,25 @@ kubectl port-forward -n confluent svc/controlcenter 9021:9021
 
 1. **Check pod status:**
    ```bash
-   kubectl get pods -n confluent -l app=controlcenter
-   kubectl logs -n confluent controlcenter-0
+   kubectl get pods -n kafka -l app=controlcenter
+   kubectl logs -n kafka controlcenter-0
    ```
 
 2. **Verify service exists:**
    ```bash
-   kubectl get svc -n confluent controlcenter
-   kubectl get endpoints -n confluent controlcenter
+   kubectl get svc -n kafka controlcenter
+   kubectl get endpoints -n kafka controlcenter
    ```
 
 3. **Check IngressRoute:**
    ```bash
-   kubectl describe ingressroute -n confluent controlcenter
+   kubectl describe ingressroute -n kafka controlcenter
    ```
 
 4. **Verify TLS certificate:**
    ```bash
-   kubectl get certificate -n confluent controlcenter-tls
-   kubectl describe certificate -n confluent controlcenter-tls
+   kubectl get certificate -n kafka controlcenter-tls
+   kubectl describe certificate -n kafka controlcenter-tls
    ```
 
 ### Connection Errors Inside Control Center
@@ -169,18 +169,18 @@ If Control Center UI loads but shows connection errors to Kafka/Connect/ksqlDB:
 
 1. **Verify all components are running:**
    ```bash
-   kubectl get pods -n confluent
+   kubectl get pods -n kafka
    ```
 
 2. **Check Control Center configuration:**
    ```bash
-   kubectl get controlcenter -n confluent controlcenter -o yaml
+   kubectl get controlcenter -n kafka controlcenter -o yaml
    ```
 
 3. **Test connectivity from Control Center pod:**
    ```bash
-   kubectl exec -n confluent controlcenter-0 -- curl http://kafka.confluent.svc.cluster.local:9071
-   kubectl exec -n confluent controlcenter-0 -- curl http://schemaregistry.confluent.svc.cluster.local:8081
+   kubectl exec -n kafka controlcenter-0 -- curl http://kafka.kafka.svc.cluster.local:9071
+   kubectl exec -n kafka controlcenter-0 -- curl http://schemaregistry.kafka.svc.cluster.local:8081
    ```
 
 ### DNS Not Resolving
@@ -216,7 +216,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Kafka
 metadata:
   name: kafka
-  namespace: confluent
+  namespace: kafka
 spec:
   replicas: 3  # Scale to 3 brokers
 ```
@@ -258,8 +258,8 @@ spec:
 Control Center includes embedded Prometheus and Alertmanager for monitoring Confluent Platform components.
 
 **Metrics endpoints:**
-- Prometheus: `http://controlcenter.confluent.svc.cluster.local:9090`
-- Alertmanager: `http://controlcenter.confluent.svc.cluster.local:9093`
+- Prometheus: `http://controlcenter.kafka.svc.cluster.local:9090`
+- Alertmanager: `http://controlcenter.kafka.svc.cluster.local:9093`
 
 To integrate with external Prometheus (kube-prometheus-stack):
 
@@ -270,7 +270,7 @@ To integrate with external Prometheus (kube-prometheus-stack):
     - role: pod
       namespaces:
         names:
-          - confluent
+          - kafka
   relabel_configs:
     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
       action: keep

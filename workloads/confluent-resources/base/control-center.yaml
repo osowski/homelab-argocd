@@ -2,7 +2,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: ControlCenter
 metadata:
   name: controlcenter
-  namespace: confluent
+  namespace: kafka
 spec:
   replicas: 1
   image:
@@ -11,19 +11,19 @@ spec:
   dataVolumeCapacity: 10Gi
   dependencies:
     schemaRegistry:
-      url: http://schemaregistry.confluent.svc.cluster.local:8081
+      url: http://schemaregistry.kafka.svc.cluster.local:8081
     ksqldb:
     - name: ksqldb
-      url: http://ksqldb.confluent.svc.cluster.local:8088
+      url: http://ksqldb.kafka.svc.cluster.local:8088
     connect:
     - name: connect
-      url: http://connect.confluent.svc.cluster.local:8083
+      url: http://connect.kafka.svc.cluster.local:8083
     kafka:
-      bootstrapEndpoint: http://kafka.confluent.svc.cluster.local:9071
+      bootstrapEndpoint: http://kafka.kafka.svc.cluster.local:9071
     prometheusClient:
-      url: http://controlcenter.confluent.svc.cluster.local:9090
+      url: http://controlcenter.kafka.svc.cluster.local:9090
     alertManagerClient:
-      url: http://controlcenter.confluent.svc.cluster.local:9093
+      url: http://controlcenter.kafka.svc.cluster.local:9093
   services:
     prometheus:
       image: confluentinc/cp-enterprise-prometheus:2.2.0

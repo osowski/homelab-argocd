@@ -22,7 +22,7 @@ spec:
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: confluent
+    namespace: operator
   ignoreDifferences:
     - group: apps
       kind: Deployment

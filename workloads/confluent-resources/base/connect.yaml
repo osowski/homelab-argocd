@@ -2,7 +2,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Connect
 metadata:
   name: connect
-  namespace: confluent
+  namespace: kafka
 spec:
   replicas: 1
   image:

@@ -2,7 +2,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Kafka
 metadata:
   name: kafka
-  namespace: confluent
+  namespace: kafka
 spec:
   replicas: 3
   image:
@@ -14,4 +14,4 @@ spec:
       clusterRef:
         name: kraftcontroller
     metricsClient:
-      url: http://controlcenter.confluent.svc.cluster.local:9090
+      url: http://controlcenter.kafka.svc.cluster.local:9090

@@ -2,24 +2,24 @@ apiVersion: flink.confluent.io/v1beta1
 kind: FlinkEnvironment
 metadata:
   name: default-flink-env
-  namespace: confluent
+  namespace: flink
 spec:
   # Reference to CMFRestClass for CMF communication
   cmfRestClassRef:
     name: cmf-rest-class
-    namespace: confluent
+    namespace: flink
 
   # Kafka cluster configuration
   # References existing Kafka broker deployed by confluent-resources
   kafkaCluster:
-    bootstrapServers: kafka.confluent.svc.cluster.local:9092
+    bootstrapServers: kafka.kafka.svc.cluster.local:9092
     # Authentication will be added when Kafka security is configured
     # Currently using PLAINTEXT for simplicity
 
   # Schema Registry configuration
   # References existing Schema Registry deployed by confluent-resources
   schemaRegistry:
-    url: http://schemaregistry.confluent.svc.cluster.local:8081
+    url: http://schemaregistry.kafka.svc.cluster.local:8081
 
   # Default resource configuration for Flink jobs
   # Conservative values for homelab environment

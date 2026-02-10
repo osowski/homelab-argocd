@@ -9,6 +9,11 @@ resources:
     cpu: 500m
     memory: 512Mi
 
+# Namespaces to watch for Flink custom resources
+# CMF watches only the flink namespace where Flink CRs are deployed
+namespaces:
+  - flink
+
 # Custom service account name
 # Chart default: auto-generated name
 serviceAccount:

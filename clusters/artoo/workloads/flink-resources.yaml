@@ -15,7 +15,7 @@ spec:
     path: workloads/flink-resources/overlays/artoo
   destination:
     server: https://kubernetes.default.svc
-    namespace: confluent
+    namespace: flink
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
