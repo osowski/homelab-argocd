@@ -104,8 +104,6 @@ The `confluent-resources` and `flink-resources` Applications are not configured 
 14. Open Confluent Control Center in your browser:
 
 - URL: `https://controlcenter.flink-demo.confluentdemo.local`
-- Username: `admin`
-- Password: `admin`
 
 ---
 
