@@ -91,6 +91,22 @@ kubectl get secret --namespace argocd argocd-initial-admin-secret --output jsonp
 
 You should see the `bootstrap`, `infrastructure`, and `workloads` Applications syncing.
 
+## Deploy Confluent and Flink Workloads
+
+The `confluent-resources` and `flink-resources` Applications are not configured for automatic sync, as they depend on the operators and namespaces being fully ready first. Trigger them manually once the `workloads` Application is healthy.
+
+12. In the ArgoCD UI, click on the `confluent-resources` Application, then click **Sync** → **Synchronize**. Wait for it to reach a `Healthy` status before proceeding.
+
+13. Click on the `flink-resources` Application, then click **Sync** → **Synchronize**. Wait for it to reach a `Healthy` status.
+
+## Access Control Center
+
+14. Open Confluent Control Center in your browser:
+
+- URL: `https://controlcenter.flink-demo.confluentdemo.local`
+- Username: `admin`
+- Password: `admin`
+
 ---
 
 > **Note on flag style:** All `kubectl` commands in this guide use long-form flags (e.g. `--namespace`, `--filename`, `--output`) for clarity. In day-to-day use, most practitioners use the equivalent short-form flags (e.g. `-n`, `-f`, `-o`).
