@@ -67,7 +67,7 @@ homelab-argocd/
 
 ## Quicker Start
 
-If you don't understand what any of this means and want the fastest, most handheld path to getting up and running, follow the [Getting Started for the Unitiated](docs/getting-started-for-the-unitiated.md) guide.
+If you don't understand what any of this means and want the fastest, most handheld path to getting up and running, follow the [Getting Started for the Unitiated](docs/getting-started-for-the-uninitiated.md) guide.
 
 ## Quick Start
 
