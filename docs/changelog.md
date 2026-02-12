@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-02-12
+
 ### Added
+- Initial GitOps repository structure
+- Bootstrap Helm chart implementing App of Apps pattern
+- ArgoCD Project definitions (infrastructure, workloads)
+- Parent Applications for automatic child Application discovery
+- http-echo validation service deployment
+- Comprehensive documentation:
+  - Architecture overview
+  - Application deployment guide
+  - Bootstrap procedure
+  - Cluster onboarding guide
+- Architecture Decision Records (ADRs):
+  - ADR-0001: App of Apps pattern selection
+- Support for portcullis cluster
+- Kustomize base + overlay pattern for applications
+- GitOps automation with automated sync, prune, and self-heal
 - **Longhorn distributed block storage** (#8)
   - Infrastructure: `longhorn` application (sync-wave 15) deployed via Helm
   - Default StorageClass for persistent volume provisioning
@@ -18,6 +35,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - IngressRoute and Certificate defined via Helm `extraObjects` feature
   - Prerequisites (open-iscsi) installed on cluster nodes via [homelab-ansible#43](https://github.com/osowski/homelab-ansible/issues/43)
   - No backup configuration (S3, NFS) - homelab environment has no backup requirements
+- **Confluent Platform with Confluent for Kubernetes (CFK) operator**
+  - **confluent-operator** (sync-wave 105) - Helm-based CFK operator deployment
+    - Namespace-scoped mode for security
+    - Creates 22 Confluent Platform CRDs and webhooks
+    - Deployed to confluent namespace with 1 replica
+    - Resource limits: 500m CPU, 512Mi RAM
+  - **confluent-resources** (sync-wave 110) - Kustomize-based Confluent Platform resources
+    - KRaft controller (1 replica, 1 CPU, 2GB RAM, 10GB storage)
+    - Kafka broker (1 replica, 2 CPU, 4GB RAM, 50GB storage)
+    - Schema Registry (1 replica, 0.5 CPU, 1GB RAM)
+    - KRaft mode (no ZooKeeper) for simplified architecture
+    - Total resource requirements: ~4 CPU, 8GB RAM, 60GB storage
+  - Enhanced workloads project RBAC to allow CRD and webhook creation
+  - Follows cert-manager two-application pattern (operator + resources)
+  - Base manifests with portcullis cluster overlays
+  - Documentation: `docs/confluent-platform.md` with usage guide
 - **Confluent Platform for Apache Flink** (#26)
   - **flink-kubernetes-operator** (sync-wave 116) - Helm-based Flink Kubernetes Operator deployment
     - Manages Flink deployments and jobs on Kubernetes
@@ -49,34 +82,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Accessible at `controlcenter.{cluster}.osow.ski` for portcullis and artoo clusters
   - Self-signed TLS certificates via cert-manager
   - Deployed in workloads project alongside confluent-resources
-
-### Changed
-- **Documentation consolidation with homelab-docs** ([#27](https://github.com/osowski/homelab-argocd/issues/27))
-  - Rewrote `docs/code_review_checklist.md` to replace Ansible-specific content with ArgoCD/Kustomize/Helm-relevant checks
-  - Added cross-references to [homelab-docs](https://github.com/osowski/homelab-docs) for shared practices, ADR guidelines, and system architecture
-  - Updated `adrs/README.md` to reference canonical ADR template and cross-cutting ADRs in homelab-docs
-  - Replaced `adrs/0000-template.md` with pointer to canonical template in homelab-docs
-  - Added homelab-docs to Related Repositories in README.md
-  - Fixed homelab-ansible URL in README.md Related Repositories
-  - Updated CLAUDE.md to remove Ansible-specific language and align with ArgoCD codebase
-
-### Added
-- **Confluent Platform with Confluent for Kubernetes (CFK) operator**
-  - **confluent-operator** (sync-wave 105) - Helm-based CFK operator deployment
-    - Namespace-scoped mode for security
-    - Creates 22 Confluent Platform CRDs and webhooks
-    - Deployed to confluent namespace with 1 replica
-    - Resource limits: 500m CPU, 512Mi RAM
-  - **confluent-resources** (sync-wave 110) - Kustomize-based Confluent Platform resources
-    - KRaft controller (1 replica, 1 CPU, 2GB RAM, 10GB storage)
-    - Kafka broker (1 replica, 2 CPU, 4GB RAM, 50GB storage)
-    - Schema Registry (1 replica, 0.5 CPU, 1GB RAM)
-    - KRaft mode (no ZooKeeper) for simplified architecture
-    - Total resource requirements: ~4 CPU, 8GB RAM, 60GB storage
-  - Enhanced workloads project RBAC to allow CRD and webhook creation
-  - Follows cert-manager two-application pattern (operator + resources)
-  - Base manifests with portcullis cluster overlays
-  - Documentation: `docs/confluent-platform.md` with usage guide
 - **cert-manager** (sync-wave 20)
   - Helm-based deployment using OCI chart from Quay (v1.19.2)
   - Multi-source pattern with Git-based values files
@@ -129,6 +134,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Parent Applications monitor these files for discovery
 
 ### Changed
+- **Documentation consolidation with homelab-docs** ([#27](https://github.com/osowski/homelab-argocd/issues/27))
+  - Rewrote `docs/code_review_checklist.md` to replace Ansible-specific content with ArgoCD/Kustomize/Helm-relevant checks
+  - Added cross-references to [homelab-docs](https://github.com/osowski/homelab-docs) for shared practices, ADR guidelines, and system architecture
+  - Updated `adrs/README.md` to reference canonical ADR template and cross-cutting ADRs in homelab-docs
+  - Replaced `adrs/0000-template.md` with pointer to canonical template in homelab-docs
+  - Added homelab-docs to Related Repositories in README.md
+  - Fixed homelab-ansible URL in README.md Related Repositories
+  - Updated CLAUDE.md to remove Ansible-specific language and align with ArgoCD codebase
 - **ArgoCD self-management deferred to future state**
   - ArgoCD remains as manual installation for now (not self-managed via GitOps)
   - Self-management documentation consolidated for future reference
@@ -159,25 +172,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `docs/bootstrap-procedure.md` - New bootstrap Application deployment procedure
   - `docs/cluster-onboarding.md` - Updated for new bootstrap pattern and kustomization files
   - `README.md` - Reference to new Helm deployment guide
-
-## [0.1.0] - 2025-01-XX
-
-### Added
-- Initial GitOps repository structure
-- Bootstrap Helm chart implementing App of Apps pattern
-- ArgoCD Project definitions (infrastructure, workloads)
-- Parent Applications for automatic child Application discovery
-- http-echo validation service deployment
-- Comprehensive documentation:
-  - Architecture overview
-  - Application deployment guide
-  - Bootstrap procedure
-  - Cluster onboarding guide
-- Architecture Decision Records (ADRs):
-  - ADR-0001: App of Apps pattern selection
-- Support for portcullis cluster
-- Kustomize base + overlay pattern for applications
-- GitOps automation with automated sync, prune, and self-heal
 
 ### Security
 - ArgoCD RBAC Projects for permission boundaries
