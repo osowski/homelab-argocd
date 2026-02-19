@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **local-path-provisioner for portcullis-class clusters** ([#54](https://github.com/osowski/homelab-argocd/issues/54))
+  - Infrastructure: `local-path-provisioner` application (sync-wave 5) deployed via Helm from GitHub source
+  - Default StorageClass `local-path` replacing MicroK8s `hostpath-storage` addon
+  - Volumes provisioned to `/opt/local-path-provisioner` on node local disk
+  - Deployed to `local-path-storage` namespace on portcullis cluster
+  - Scoped to portcullis-class clusters (MicroK8s VMs with real 80GB local disks)
+  - Added `https://github.com/rancher/local-path-provisioner` to infrastructure project sourceRepos
 - **Longhorn distributed block storage** (#8)
   - Infrastructure: `longhorn` application (sync-wave 15) deployed via Helm
   - Default StorageClass for persistent volume provisioning

@@ -1,0 +1,38 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: local-path-provisioner
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"  # Early wave — storage must be ready before workloads
+spec:
+  project: infrastructure
+  sources:
+  - repoURL: https://github.com/rancher/local-path-provisioner
+    targetRevision: v0.0.30  # Pin to specific version
+    path: deploy/chart/local-path-provisioner
+    helm:
+      ignoreMissingValueFiles: true
+      valueFiles:
+        - $values/infrastructure/local-path-provisioner/base/values.yaml
+  - repoURL: https://github.com/osowski/homelab-argocd
+    targetRevision: HEAD
+    ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: local-path-storage
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
