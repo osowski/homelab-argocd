@@ -9,7 +9,7 @@ preUpgradeChecker:
 
 # Persistence settings
 persistence:
-  defaultClass: true
+  defaultClass: false  # local-path-provisioner is the cluster default (see #82)
   defaultFsType: ext4
   defaultClassReplicaCount: 2  # Homelab configuration with limited nodes
   defaultDataLocality: best-effort  # Prefer local data access when possible
