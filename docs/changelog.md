@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Longhorn StorageClass no longer marked as default** ([#84](https://github.com/osowski/homelab-argocd/issues/84))
+  - Set `persistence.defaultClass: false` so `local-path` (added in #82) is the sole cluster default
+  - Longhorn remains available for workloads that explicitly request replicated block storage
+
 ### Added
 - **local-path-provisioner for portcullis-class clusters** ([#54](https://github.com/osowski/homelab-argocd/issues/54))
   - Infrastructure: `local-path-provisioner` application (sync-wave 5) deployed via Helm from GitHub source
