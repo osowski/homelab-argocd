@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Longhorn remains available for workloads that explicitly request replicated block storage
 
 ### Added
+- **AppProject resource audit procedure** ([#47](https://github.com/osowski/homelab-argocd/issues/47))
+  - New check item in `docs/code_review_checklist.md`: verify all resource kinds created by a new Application are permitted by the target AppProject's `clusterResourceWhitelist` / `namespaceResourceWhitelist`
+  - New common pitfall entry (#3): "AppProject resource not whitelisted" with link to the audit procedure
+  - New section in `docs/adding-applications.md` — AppProject Resource Audit — covering:
+    - Enumerating resources from Kustomize overlays and Helm charts (local, remote Helm registry, GitHub-sourced charts)
+    - Cluster-scoped vs namespace-scoped classification reference table
+    - Cross-referencing against the project allowlist in `bootstrap/templates/argocd-projects.yaml`
+    - Example audit table from the `local-path-provisioner` review
 - **local-path-provisioner for portcullis-class clusters** ([#54](https://github.com/osowski/homelab-argocd/issues/54))
   - Infrastructure: `local-path-provisioner` application (sync-wave 5) deployed via Helm from GitHub source
   - Default StorageClass `local-path` replacing MicroK8s `hostpath-storage` addon
