@@ -6,11 +6,12 @@ kind: Kustomization
 namespace: kafka
 
 resources:
-  - connect.yaml
+  #- connect.yaml
   - control-center.yaml
+  - kafkarestclass.yaml
   - kafka-broker.yaml
   - kraft-controller.yaml
-  - ksqldb.yaml
+  #- ksqldb.yaml
   - schema-registry.yaml
 
 commonLabels:
