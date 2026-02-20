@@ -3,7 +3,7 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: controlcenter
-  namespace: confluent
+  namespace: kafka
 spec:
   routes:
     - match: Host(`controlcenter.artoo.osow.ski`)

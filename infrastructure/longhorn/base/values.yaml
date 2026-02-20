@@ -1,9 +1,15 @@
 # Base configuration for Longhorn distributed block storage
 # Shared across all clusters
 
+# Pre-upgrade checker configuration
+# Disable for GitOps/ArgoCD deployments as recommended by Longhorn documentation
+preUpgradeChecker:
+  jobEnabled: false  # Must be disabled when installing via ArgoCD
+  upgradeVersionCheck: true  # Keep version checks enabled
+
 # Persistence settings
 persistence:
-  defaultClass: true
+  defaultClass: false  # local-path-provisioner is the cluster default (see #82)
   defaultFsType: ext4
   defaultClassReplicaCount: 2  # Homelab configuration with limited nodes
   defaultDataLocality: best-effort  # Prefer local data access when possible

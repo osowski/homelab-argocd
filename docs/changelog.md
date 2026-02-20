@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Longhorn StorageClass no longer marked as default** ([#84](https://github.com/osowski/homelab-argocd/issues/84))
+  - Set `persistence.defaultClass: false` so `local-path` (added in #82) is the sole cluster default
+  - Longhorn remains available for workloads that explicitly request replicated block storage
+
 ### Added
 - **AppProject resource audit procedure** ([#47](https://github.com/osowski/homelab-argocd/issues/47))
   - New check item in `docs/code_review_checklist.md`: verify all resource kinds created by a new Application are permitted by the target AppProject's `clusterResourceWhitelist` / `namespaceResourceWhitelist`
@@ -16,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Cluster-scoped vs namespace-scoped classification reference table
     - Cross-referencing against the project allowlist in `bootstrap/templates/argocd-projects.yaml`
     - Example audit table from the `local-path-provisioner` review
+- **local-path-provisioner for portcullis-class clusters** ([#54](https://github.com/osowski/homelab-argocd/issues/54))
+  - Infrastructure: `local-path-provisioner` application (sync-wave 5) deployed via Helm from GitHub source
+  - Default StorageClass `local-path` replacing MicroK8s `hostpath-storage` addon
+  - Volumes provisioned to `/opt/local-path-provisioner` on node local disk
+  - Deployed to `local-path-storage` namespace on portcullis cluster
+  - Scoped to portcullis-class clusters (MicroK8s VMs with real 80GB local disks)
+  - Added `https://github.com/rancher/local-path-provisioner` to infrastructure project sourceRepos
 - **Longhorn distributed block storage** (#8)
   - Infrastructure: `longhorn` application (sync-wave 15) deployed via Helm
   - Default StorageClass for persistent volume provisioning

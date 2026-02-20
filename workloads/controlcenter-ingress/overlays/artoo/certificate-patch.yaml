@@ -2,7 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: controlcenter-tls
-  namespace: confluent
+  namespace: kafka
 spec:
   dnsNames:
   - controlcenter.artoo.osow.ski

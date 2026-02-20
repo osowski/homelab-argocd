@@ -16,8 +16,8 @@ spec:
     path: workloads/controlcenter-ingress/overlays/portcullis
   destination:
     server: https://kubernetes.default.svc
-    namespace: confluent
+    namespace: kafka
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true
+      selfHeal: false

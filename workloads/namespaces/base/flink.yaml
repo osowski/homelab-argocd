@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: confluent
+  name: flink
   labels:
-    app.kubernetes.io/name: confluent
+    app.kubernetes.io/name: flink
     app.kubernetes.io/component: platform

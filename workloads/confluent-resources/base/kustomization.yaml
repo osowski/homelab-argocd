@@ -3,10 +3,9 @@ kind: Kustomization
 
 ## NOTE: Initial resources modeled after https://github.com/confluentinc/confluent-kubernetes-examples/blob/master/quickstart-deploy/kraft-quickstart/confluent-platform-c3%2B%2B.yaml
 
-namespace: confluent
+namespace: kafka
 
 resources:
-  - namespace.yaml
   - connect.yaml
   - control-center.yaml
   - kafka-broker.yaml

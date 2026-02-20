@@ -22,13 +22,12 @@ spec:
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: confluent
+    namespace: operator
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true
+      selfHeal: false
     syncOptions:
-      - CreateNamespace=true
       - ServerSideApply=true
     retry:
       limit: 5

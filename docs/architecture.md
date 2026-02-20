@@ -54,6 +54,7 @@ Platform infrastructure components deployed before workloads.
 
 **Deployed components:**
 - **kube-prometheus-stack-crds** (wave 2) - Prometheus Operator CRDs deployed early for availability
+- **local-path-provisioner** (wave 5) - Lightweight dynamic PV provisioner using local node storage (portcullis-class clusters only)
 - **traefik** (wave 10) - Ingress controller for external access
 - **longhorn** (wave 15) - Distributed block storage with persistent volume provisioning
 - **kube-prometheus-stack** (wave 20) - Monitoring stack with Prometheus, Grafana, Alertmanager
@@ -134,6 +135,7 @@ Bootstrap Application (sync-wave 0)
 │   ├── infrastructure (Parent Application, sync-wave 1)
 │   │   └── Watches: clusters/<cluster>/infrastructure/
 │   │       ├── kube-prometheus-stack-crds (sync-wave 2)
+│   │       ├── local-path-provisioner (sync-wave 5)
 │   │       ├── traefik (sync-wave 10)
 │   │       ├── longhorn (sync-wave 15)
 │   │       ├── kube-prometheus-stack (sync-wave 20)
@@ -178,6 +180,7 @@ Applications deploy in waves using `argocd.argoproj.io/sync-wave` annotations:
 | 0 | bootstrap | Creates Projects and Parent Applications |
 | 1 | infrastructure (parent) | Infrastructure App of Apps |
 | 2 | kube-prometheus-stack-crds | Prometheus Operator CRDs for early availability |
+| 5 | local-path-provisioner | Lightweight dynamic PV provisioner (portcullis-class clusters) |
 | 10 | traefik | Ingress controller for external access |
 | 15 | longhorn | Distributed block storage for persistent volumes |
 | 20 | kube-prometheus-stack | Monitoring stack (Prometheus, Grafana, Alertmanager) |

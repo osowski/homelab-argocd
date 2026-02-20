@@ -65,14 +65,19 @@ homelab-argocd/
     └── project_spec.md
 ```
 
+## Quicker Start
+
+If you don't understand what any of this means and want the fastest, most handheld path to getting up and running, follow the [Getting Started for the Unitiated](docs/getting-started-for-the-uninitiated.md) guide.
+
 ## Quick Start
+
+If you have experience with GitOps or want to understand how the inner workings of this architecture plays out, you can follow the steps below.
 
 ### Prerequisites
 
 - Kubernetes cluster with ArgoCD installed
   - https://argo-cd.readthedocs.io/en/stable/getting_started/#1-install-argo-cd
 ```
-  ## TODO Revisit for version-specific install
   kubectl create namespace argocd
   kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
@@ -87,14 +92,12 @@ homelab-argocd/
    cd homelab-argocd
    ```
 
-2. Ensure repository credentials exist in Argo CD for this repository.
-
-3. Deploy the bootstrap application:
+2. Deploy the bootstrap application:
    ```bash
    kubectl apply -f ./clusters/<cluster-name>/bootstrap.yaml
    ```
 
-4. Watch ArgoCD sync the applications:
+3. Watch ArgoCD sync the applications:
    ```bash
    kubectl get applications -n argocd -w
    ```
@@ -102,14 +105,14 @@ homelab-argocd/
 ### Access ArgoCD UI
 
 ```bash
-# Port-forward to ArgoCD server
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+# Get cluster-specific hostname for Argo CD application
+kubectl get ingressroute -n argocd -o yaml argocd-server | yq '.spec.routes[0].match'
 
 # Get admin password
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
 
-Navigate to https://localhost:8080 and login with username `admin` and the password from above.
+Navigate to `https://<cluster-specific-hostname>` and login with username `admin` and the password from above.
 
 ## How It Works
 

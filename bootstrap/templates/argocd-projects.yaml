@@ -14,8 +14,10 @@ spec:
     - {{ .Values.git.repoUrl }}
     - https://prometheus-community.github.io/helm-charts
     - https://argoproj.github.io/argo-helm
+    - https://charts.longhorn.io
     - oci://ghcr.io/traefik/helm/traefik
     - oci://quay.io/jetstack/charts/cert-manager
+    - https://github.com/rancher/local-path-provisioner
 
   # Allow deploying to all namespaces
   destinations:
@@ -127,9 +129,11 @@ spec:
       kind: FlinkDeployment
     - group: flink.apache.org
       kind: FlinkSessionJob
-    - group: flink.confluent.io
+    - group: platform.confluent.io
       kind: CMFRestClass
-    - group: flink.confluent.io
+    - group: platform.confluent.io
       kind: FlinkEnvironment
-    - group: flink.confluent.io
+    - group: platform.confluent.io
       kind: FlinkApplication
+    - group: monitoring.coreos.com
+      kind: ServiceMonitor

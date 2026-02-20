@@ -5,7 +5,7 @@
 # kind: KRaftController
 # metadata:
 #   name: kraftcontroller
-#   namespace: confluent
+#   namespace: kafka
 # spec:
 #   storageClass:
 #     name: longhorn
@@ -15,7 +15,7 @@
 # kind: Kafka
 # metadata:
 #   name: kafka
-#   namespace: confluent
+#   namespace: kafka
 # spec:
 #   storageClass:
 #     name: longhorn

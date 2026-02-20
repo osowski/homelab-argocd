@@ -22,7 +22,7 @@ spec:
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: confluent
+    namespace: operator
   ignoreDifferences:
     - group: apiextensions.k8s.io
       kind: CustomResourceDefinition
@@ -31,9 +31,8 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true
+      selfHeal: false
     syncOptions:
-      - CreateNamespace=true
       - ServerSideApply=true
     retry:
       limit: 5

@@ -6,8 +6,11 @@ resources:
   - ../../base
 
 # Cluster-specific labels
-commonLabels:
-  cluster: portcullis
+labels:
+- includeSelectors: false
+  includeTemplates: true  
+  pairs:
+    cluster: portcullis
 
 # Future: Add cluster-specific patches here if needed
 # patches:

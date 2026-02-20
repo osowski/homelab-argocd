@@ -15,7 +15,4 @@ spec:
     path: workloads/flink-resources/overlays/portcullis
   destination:
     server: https://kubernetes.default.svc
-    namespace: confluent
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
+    namespace: flink

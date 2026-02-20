@@ -6,8 +6,11 @@ resources:
   - ../../base
 
 # Cluster-specific labels
-commonLabels:
-  cluster: artoo
+labels:
+- includeSelectors: false
+  includeTemplates: true  
+  pairs:
+    cluster: artoo
 
 # Future: Add cluster-specific patches here if needed
 # patches:
