@@ -1,0 +1,15 @@
+# Base configuration for Rancher local-path-provisioner
+# Lightweight dynamic PV provisioner using local node storage
+# Scoped to portcullis-class clusters (MicroK8s VMs with real local disks)
+
+storageClass:
+  name: local-path
+  # Make local-path the default StorageClass, replacing MicroK8s hostpath-storage
+  defaultClass: true
+  reclaimPolicy: Delete
+
+# Configure node storage path for provisioned volumes
+nodePathMap:
+  - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+    paths:
+      - /opt/local-path-provisioner
